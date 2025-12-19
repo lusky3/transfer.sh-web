@@ -1,14 +1,49 @@
-build/
-pkg/
-dist/
-bin/
-*.pyc
-*.egg-info/
-
-.tmp
-.vagrant
-
-bower_components/
+# Dependencies
 node_modules/
 
-letsencrypt.cache
+# Build output
+dist/
+.tmp/
+
+# Generated files
+bindata_gen.go
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# TypeScript
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# LLM/AI
+.cursor/
+.aider*
+.claude/
+.continue/
+.copilot/
+.kiro
+.llm-context/

@@ -1,0 +1,229 @@
+import { useState, useCallback, useRef } from 'react';
+import { Upload, X, CheckCircle, AlertCircle, FileIcon, Loader2 } from 'lucide-react';
+import { getConfig } from '../types/config';
+
+interface UploadedFile {
+  id: string;
+  name: string;
+  size: number;
+  progress: number;
+  status: 'uploading' | 'complete' | 'error';
+  url?: string;
+  deletionToken?: string;
+  error?: string;
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+export function UploadZone() {
+  const [isDragging, setIsDragging] = useState(false);
+  const [files, setFiles] = useState<UploadedFile[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const config = getConfig();
+
+  const uploadFile = useCallback(async (file: File) => {
+    const id = crypto.randomUUID();
+    const uploadedFile: UploadedFile = {
+      id,
+      name: file.name,
+      size: file.size,
+      progress: 0,
+      status: 'uploading',
+    };
+
+    setFiles(prev => [...prev, uploadedFile]);
+
+    try {
+      const xhr = new XMLHttpRequest();
+      
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          const progress = Math.round((e.loaded / e.total) * 100);
+          setFiles(prev => prev.map(f => 
+            f.id === id ? { ...f, progress } : f
+          ));
+        }
+      });
+
+      await new Promise<void>((resolve, reject) => {
+        xhr.onreadystatechange = () => {
+          if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+              const url = xhr.responseText.trim();
+              const deletionToken = xhr.getResponseHeader('X-Url-Delete')?.split('/').pop();
+              setFiles(prev => prev.map(f => 
+                f.id === id ? { ...f, status: 'complete', url, deletionToken, progress: 100 } : f
+              ));
+              resolve();
+            } else {
+              setFiles(prev => prev.map(f => 
+                f.id === id ? { ...f, status: 'error', error: `Upload failed (${xhr.status})` } : f
+              ));
+              reject(new Error(`Upload failed: ${xhr.status}`));
+            }
+          }
+        };
+
+        xhr.open('PUT', './' + file.name, true);
+        xhr.send(file);
+      });
+    } catch {
+      setFiles(prev => prev.map(f => 
+        f.id === id ? { ...f, status: 'error', error: 'Upload failed' } : f
+      ));
+    }
+  }, []);
+
+  const handleFiles = useCallback((fileList: FileList | null) => {
+    if (!fileList) return;
+    Array.from(fileList).forEach(uploadFile);
+  }, [uploadFile]);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    handleFiles(e.dataTransfer.files);
+  }, [handleFiles]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  }, []);
+
+  const removeFile = useCallback((id: string) => {
+    setFiles(prev => prev.filter(f => f.id !== id));
+  }, []);
+
+  const completedFiles = files.filter(f => f.status === 'complete');
+  const downloadAllUrl = completedFiles.length > 1
+    ? `${config.webAddress}(${completedFiles.map(f => new URL(f.url!).pathname).join(',')}).zip`
+    : null;
+
+  return (
+    <div className="space-y-4">
+      <div
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onClick={() => fileInputRef.current?.click()}
+        className={`
+          relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all
+          ${isDragging 
+            ? 'border-primary-500 bg-primary-50 dark:bg-primary-950/20' 
+            : 'border-gray-300 dark:border-gray-700 hover:border-primary-400 dark:hover:border-primary-600'
+          }
+        `}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          onChange={(e) => handleFiles(e.target.files)}
+          className="hidden"
+        />
+        
+        <Upload className={`w-12 h-12 mx-auto mb-4 ${isDragging ? 'text-primary-500' : 'text-gray-400'}`} />
+        
+        <p className="text-lg font-medium mb-1">
+          {isDragging ? 'Drop files here' : 'Drag & drop files here'}
+        </p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          or <span className="text-primary-600 dark:text-primary-400">browse</span> to upload
+        </p>
+      </div>
+
+      {files.length > 0 && (
+        <div className="space-y-2">
+          {files.map(file => (
+            <div
+              key={file.id}
+              className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg"
+            >
+              <FileIcon className="w-5 h-5 text-gray-400 flex-shrink-0" />
+              
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  {file.status === 'complete' && file.url ? (
+                    <a
+                      href={file.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium truncate text-primary-600 dark:text-primary-400 hover:underline"
+                    >
+                      {file.name}
+                    </a>
+                  ) : (
+                    <span className="font-medium truncate">{file.name}</span>
+                  )}
+                  <span className="text-xs text-gray-500 flex-shrink-0">
+                    {formatBytes(file.size)}
+                  </span>
+                </div>
+                
+                {file.status === 'uploading' && (
+                  <div className="mt-1 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary-500 transition-all duration-300"
+                      style={{ width: `${file.progress}%` }}
+                    />
+                  </div>
+                )}
+                
+                {file.status === 'complete' && file.deletionToken && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Deletion token: <code className="bg-gray-200 dark:bg-gray-800 px-1 rounded">{file.deletionToken}</code>
+                  </p>
+                )}
+                
+                {file.status === 'error' && (
+                  <p className="text-xs text-red-500 mt-1">{file.error}</p>
+                )}
+              </div>
+
+              <div className="flex-shrink-0">
+                {file.status === 'uploading' && (
+                  <Loader2 className="w-5 h-5 text-primary-500 animate-spin" />
+                )}
+                {file.status === 'complete' && (
+                  <CheckCircle className="w-5 h-5 text-green-500" />
+                )}
+                {file.status === 'error' && (
+                  <AlertCircle className="w-5 h-5 text-red-500" />
+                )}
+              </div>
+
+              <button
+                onClick={() => removeFile(file.id)}
+                className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+
+          {downloadAllUrl && (
+            <div className="flex gap-2 pt-2">
+              <a href={downloadAllUrl} className="btn btn-secondary text-sm">
+                Download all as ZIP
+              </a>
+              <a href={downloadAllUrl.replace('.zip', '.tar.gz')} className="btn btn-secondary text-sm">
+                Download all as TAR.GZ
+              </a>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
