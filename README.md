@@ -2,6 +2,12 @@
 
 Modern web frontend for [transfer.sh](https://github.com/dutchcoders/transfer.sh/) - easy file sharing from the command line.
 
+## Screenshots
+
+![Home Light](screenshots/home-light.png)
+
+![Home Dark](screenshots/home-dark.png)
+
 ## Features
 
 - Drag-and-drop file upload with progress indicators
