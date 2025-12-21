@@ -1,0 +1,15 @@
+services:
+  transfer:
+    image: dutchcoders/transfer.sh:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./dist:/webapp:ro
+    tmpfs:
+      - /uploads:size=100M
+    command:
+      - --provider=local
+      - --basedir=/uploads
+      - --web-path=/webapp
+    environment:
+      - HOSTNAME=localhost:8080

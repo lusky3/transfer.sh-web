@@ -1,13 +1,20 @@
 # transfer.sh-web
 
-Web frontend for [transfer.sh](https://github.com/dutchcoders/transfer.sh/) - easy file sharing from the command line.
+Modern web frontend for [transfer.sh](https://github.com/dutchcoders/transfer.sh/) - easy file sharing from the command line.
+
+## Features
+
+- Drag-and-drop file upload with progress indicators
+- Dark / Light / System theme support
+- File previews (images, video, audio, code with syntax highlighting, markdown)
+- Mobile responsive design
+- CLI usage examples
 
 ## Tech Stack
 
 - React 19 + TypeScript
-- Vite 6
-- Tailwind CSS
-- go-bindata for Go integration
+- Vite 7
+- Tailwind CSS 4
 
 ## Development
 
@@ -15,7 +22,7 @@ Web frontend for [transfer.sh](https://github.com/dutchcoders/transfer.sh/) - ea
 # Install dependencies
 npm install
 
-# Start dev server
+# Start dev server (http://localhost:5173)
 npm run dev
 
 # Build for production
@@ -25,43 +32,88 @@ npm run build
 npm run preview
 ```
 
+## Testing with Docker
+
+A `compose.yml` is included for testing with the transfer.sh backend:
+
+```bash
+npm run build
+docker compose up
+```
+
+Then open [http://localhost:8080]
+
 ## Production Deployment
 
-Build and generate Go bindata:
+### Option 1: Docker with mounted dist
+
+Build the frontend and mount it into the transfer.sh container:
+
+```bash
+npm run build
+```
+
+```yaml
+# compose.yml
+services:
+  transfer:
+    image: dutchcoders/transfer.sh:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./dist:/webapp:ro
+      - /path/to/uploads:/uploads
+    command:
+      - --provider=local
+      - --basedir=/uploads
+      - --web-path=/webapp
+```
+
+### Option 2: Embed in Go binary
+
+Build the frontend and generate Go bindata:
 
 ```bash
 npm run build
 go generate .
 ```
 
-Then specify the `web-path` directory pointing to `dist`:
-
-```bash
-docker run -d \
-  -v /folder:/uploads \
-  -v /folder/dist:/webapp \
-  --publish 5000:8080 \
-  dutchcoders/transfer.sh:latest \
-  --provider local \
-  --basedir /uploads \
-  --web-path /webapp/
-```
-
-## Features
-
-- Drag-and-drop file upload
-- Dark/Light/System theme support
-- File previews (image, video, audio, code, markdown)
-- CLI usage examples
-- Mobile responsive
+This creates `bindata_gen.go` which embeds the dist files into the Go binary.
 
 ## Go Template Variables
 
 The frontend uses Go template variables passed via `window.__CONFIG__`:
 
-- `{{.WebAddress}}` - Base URL
-- `{{.Hostname}}` - Server hostname
-- `{{.GAKey}}` - Google Analytics key
-- `{{.EmailContact}}` - Contact email
-- `{{.MaxUploadSize}}` - Upload limit
-- `{{.PurgeTime}}` - File retention period
+| Variable | Description |
+|----------|-------------|
+| `{{.WebAddress}}` | Base URL (e.g., `https://transfer.sh/`) |
+| `{{.Hostname}}` | Server hostname |
+| `{{.GAKey}}` | Google Analytics key (optional) |
+| `{{.EmailContact}}` | Contact email (optional) |
+| `{{.MaxUploadSize}}` | Upload size limit (optional) |
+| `{{.PurgeTime}}` | File retention period (optional) |
+
+## Build Output
+
+The build outputs to `dist/` with this structure:
+
+```text
+dist/
+├── index.html
+├── download.html
+├── download-{image,video,audio,code,markdown}.html
+├── 404.html
+├── robots.txt
+├── scripts/          # JS bundles
+└── styles/           # CSS bundles
+```
+
+Assets are placed in `scripts/` and `styles/` directories to match the paths served by the transfer.sh backend.
+
+## License
+
+MIT
+
+## AI Usage Disclaimer
+
+Portions of this codebase were generated with the assistance of Large Language Models (LLMs). All AI-generated code has been reviewed and tested to ensure quality and correctness.

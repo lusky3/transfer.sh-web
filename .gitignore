@@ -5,6 +5,9 @@ node_modules/
 dist/
 .tmp/
 
+# Test coverage
+coverage/
+
 # Generated files
 bindata_gen.go
 

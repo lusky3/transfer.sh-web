@@ -17,6 +17,7 @@ export default defineConfig({
   build: {
     outDir: '../dist',
     emptyOutDir: true,
+    assetsDir: 'scripts',
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'src/index.html'),
@@ -27,6 +28,16 @@ export default defineConfig({
         'download-markdown': resolve(__dirname, 'src/download-markdown.html'),
         'download-code': resolve(__dirname, 'src/download-code.html'),
         '404': resolve(__dirname, 'src/404.html'),
+      },
+      output: {
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name?.endsWith('.css')) {
+            return 'styles/[name]-[hash][extname]'
+          }
+          return 'scripts/[name]-[hash][extname]'
+        },
+        chunkFileNames: 'scripts/[name]-[hash].js',
+        entryFileNames: 'scripts/[name]-[hash].js',
       },
     },
   },

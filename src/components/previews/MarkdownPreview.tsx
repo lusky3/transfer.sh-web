@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 
 interface MarkdownPreviewProps {
   url: string;
@@ -52,7 +53,7 @@ export function MarkdownPreview({ url }: MarkdownPreviewProps) {
         if (!res.ok) throw new Error('Failed to load file');
         return res.text();
       })
-      .then(md => setContent(parseMarkdown(md)))
+      .then(md => setContent(DOMPurify.sanitize(parseMarkdown(md))))
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   }, [url]);
