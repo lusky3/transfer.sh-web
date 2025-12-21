@@ -8,6 +8,25 @@ vi.stubGlobal('crypto', {
   randomUUID: () => `test-uuid-${++uuidCounter}`,
 })
 
+// Helper to create mock XHR
+function createMockXHR(options: {
+  status?: number
+  responseText?: string
+  deletionHeader?: string | null
+} = {}) {
+  const { status = 200, responseText = '', deletionHeader = null } = options
+  return {
+    open: vi.fn(),
+    send: vi.fn(),
+    upload: { addEventListener: vi.fn() },
+    onload: null as (() => void) | null,
+    onerror: null as (() => void) | null,
+    status,
+    responseText,
+    getResponseHeader: vi.fn().mockReturnValue(deletionHeader),
+  }
+}
+
 describe('UploadZone', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
@@ -60,16 +79,10 @@ describe('UploadZone', () => {
   })
 
   it('uploads file when dropped', async () => {
-    const mockXHR = {
-      open: vi.fn(),
-      send: vi.fn(),
-      upload: { addEventListener: vi.fn() },
-      onreadystatechange: null as (() => void) | null,
-      readyState: 4,
-      status: 200,
+    const mockXHR = createMockXHR({
       responseText: 'https://transfer.sh/abc123/test.txt',
-      getResponseHeader: vi.fn().mockReturnValue('https://transfer.sh/abc123/test.txt/delete123'),
-    }
+      deletionHeader: 'https://transfer.sh/abc123/test.txt/delete123',
+    })
     vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
 
     render(<UploadZone />)
@@ -80,11 +93,8 @@ describe('UploadZone', () => {
     
     fireEvent.drop(dropZone, { dataTransfer })
     
-    // Trigger XHR completion wrapped in act
     await act(async () => {
-      if (mockXHR.onreadystatechange) {
-        mockXHR.onreadystatechange()
-      }
+      if (mockXHR.onload) mockXHR.onload()
     })
 
     await waitFor(() => {
@@ -93,16 +103,9 @@ describe('UploadZone', () => {
   })
 
   it('shows file size', async () => {
-    const mockXHR = {
-      open: vi.fn(),
-      send: vi.fn(),
-      upload: { addEventListener: vi.fn() },
-      onreadystatechange: null as (() => void) | null,
-      readyState: 4,
-      status: 200,
+    const mockXHR = createMockXHR({
       responseText: 'https://transfer.sh/abc123/test.txt',
-      getResponseHeader: vi.fn().mockReturnValue(null),
-    }
+    })
     vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
 
     render(<UploadZone />)
@@ -114,9 +117,7 @@ describe('UploadZone', () => {
     fireEvent.drop(dropZone, { dataTransfer })
     
     await act(async () => {
-      if (mockXHR.onreadystatechange) {
-        mockXHR.onreadystatechange()
-      }
+      if (mockXHR.onload) mockXHR.onload()
     })
 
     await waitFor(() => {
@@ -125,16 +126,9 @@ describe('UploadZone', () => {
   })
 
   it('allows removing uploaded file', async () => {
-    const mockXHR = {
-      open: vi.fn(),
-      send: vi.fn(),
-      upload: { addEventListener: vi.fn() },
-      onreadystatechange: null as (() => void) | null,
-      readyState: 4,
-      status: 200,
+    const mockXHR = createMockXHR({
       responseText: 'https://transfer.sh/abc123/test.txt',
-      getResponseHeader: vi.fn().mockReturnValue(null),
-    }
+    })
     vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
 
     render(<UploadZone />)
@@ -144,9 +138,7 @@ describe('UploadZone', () => {
     fireEvent.drop(dropZone, { dataTransfer: { files: [file] } })
     
     await act(async () => {
-      if (mockXHR.onreadystatechange) {
-        mockXHR.onreadystatechange()
-      }
+      if (mockXHR.onload) mockXHR.onload()
     })
 
     await waitFor(() => {
@@ -162,16 +154,9 @@ describe('UploadZone', () => {
 
 
   it('handles file input change', async () => {
-    const mockXHR = {
-      open: vi.fn(),
-      send: vi.fn(),
-      upload: { addEventListener: vi.fn() },
-      onreadystatechange: null as (() => void) | null,
-      readyState: 4,
-      status: 200,
+    const mockXHR = createMockXHR({
       responseText: 'https://transfer.sh/abc123/test.txt',
-      getResponseHeader: vi.fn().mockReturnValue(null),
-    }
+    })
     vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
 
     const { container } = render(<UploadZone />)
@@ -184,9 +169,7 @@ describe('UploadZone', () => {
     })
 
     await act(async () => {
-      if (mockXHR.onreadystatechange) {
-        mockXHR.onreadystatechange()
-      }
+      if (mockXHR.onload) mockXHR.onload()
     })
 
     await waitFor(() => {
@@ -206,8 +189,8 @@ describe('UploadZone', () => {
           }
         })
       },
-      onreadystatechange: null as (() => void) | null,
-      readyState: 0,
+      onload: null as (() => void) | null,
+      onerror: null as (() => void) | null,
       status: 0,
       responseText: '',
       getResponseHeader: vi.fn().mockReturnValue(null),
@@ -235,16 +218,7 @@ describe('UploadZone', () => {
   })
 
   it('shows error state on upload failure', async () => {
-    const mockXHR = {
-      open: vi.fn(),
-      send: vi.fn(),
-      upload: { addEventListener: vi.fn() },
-      onreadystatechange: null as (() => void) | null,
-      readyState: 4,
-      status: 500,
-      responseText: '',
-      getResponseHeader: vi.fn().mockReturnValue(null),
-    }
+    const mockXHR = createMockXHR({ status: 500 })
     vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
 
     render(<UploadZone />)
@@ -257,9 +231,7 @@ describe('UploadZone', () => {
     })
 
     await act(async () => {
-      if (mockXHR.onreadystatechange) {
-        mockXHR.onreadystatechange()
-      }
+      if (mockXHR.onload) mockXHR.onload()
     })
 
     await waitFor(() => {
@@ -268,16 +240,10 @@ describe('UploadZone', () => {
   })
 
   it('shows deletion token when provided', async () => {
-    const mockXHR = {
-      open: vi.fn(),
-      send: vi.fn(),
-      upload: { addEventListener: vi.fn() },
-      onreadystatechange: null as (() => void) | null,
-      readyState: 4,
-      status: 200,
+    const mockXHR = createMockXHR({
       responseText: 'https://transfer.sh/abc123/test.txt',
-      getResponseHeader: vi.fn().mockReturnValue('https://transfer.sh/abc123/test.txt/mytoken123'),
-    }
+      deletionHeader: 'https://transfer.sh/abc123/test.txt/mytoken123',
+    })
     vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
 
     render(<UploadZone />)
@@ -290,9 +256,7 @@ describe('UploadZone', () => {
     })
 
     await act(async () => {
-      if (mockXHR.onreadystatechange) {
-        mockXHR.onreadystatechange()
-      }
+      if (mockXHR.onload) mockXHR.onload()
     })
 
     await waitFor(() => {
@@ -301,16 +265,9 @@ describe('UploadZone', () => {
   })
 
   it('shows download all buttons for multiple completed files', async () => {
-    const mockXHR = {
-      open: vi.fn(),
-      send: vi.fn(),
-      upload: { addEventListener: vi.fn() },
-      onreadystatechange: null as (() => void) | null,
-      readyState: 4,
-      status: 200,
+    const mockXHR = createMockXHR({
       responseText: 'https://transfer.sh/abc123/file1.txt',
-      getResponseHeader: vi.fn().mockReturnValue(null),
-    }
+    })
     vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
 
     render(<UploadZone />)
@@ -322,7 +279,7 @@ describe('UploadZone', () => {
       fireEvent.drop(dropZone, { dataTransfer: { files: [file1] } })
     })
     await act(async () => {
-      if (mockXHR.onreadystatechange) mockXHR.onreadystatechange()
+      if (mockXHR.onload) mockXHR.onload()
     })
 
     // Upload second file
@@ -332,7 +289,7 @@ describe('UploadZone', () => {
       fireEvent.drop(dropZone, { dataTransfer: { files: [file2] } })
     })
     await act(async () => {
-      if (mockXHR.onreadystatechange) mockXHR.onreadystatechange()
+      if (mockXHR.onload) mockXHR.onload()
     })
 
     await waitFor(() => {
@@ -353,16 +310,9 @@ describe('UploadZone', () => {
   })
 
   it('renders completed file as link', async () => {
-    const mockXHR = {
-      open: vi.fn(),
-      send: vi.fn(),
-      upload: { addEventListener: vi.fn() },
-      onreadystatechange: null as (() => void) | null,
-      readyState: 4,
-      status: 200,
+    const mockXHR = createMockXHR({
       responseText: 'https://transfer.sh/abc123/linked-file.txt',
-      getResponseHeader: vi.fn().mockReturnValue(null),
-    }
+    })
     vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
 
     render(<UploadZone />)
@@ -373,7 +323,7 @@ describe('UploadZone', () => {
       fireEvent.drop(dropZone, { dataTransfer: { files: [file] } })
     })
     await act(async () => {
-      if (mockXHR.onreadystatechange) mockXHR.onreadystatechange()
+      if (mockXHR.onload) mockXHR.onload()
     })
 
     await waitFor(() => {

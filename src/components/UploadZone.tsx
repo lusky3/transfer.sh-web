@@ -21,11 +21,50 @@ function formatBytes(bytes: number): string {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
+interface UploadResult {
+  url: string;
+  deletionToken?: string;
+}
+
+function createFileUploader(
+  file: File,
+  onProgress: (progress: number) => void
+): Promise<UploadResult> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.addEventListener('progress', (e) => {
+      if (e.lengthComputable) {
+        onProgress(Math.round((e.loaded / e.total) * 100));
+      }
+    });
+
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        const url = xhr.responseText.trim();
+        const deletionToken = xhr.getResponseHeader('X-Url-Delete')?.split('/').pop();
+        resolve({ url, deletionToken });
+      } else {
+        reject(new Error(`Upload failed (${xhr.status})`));
+      }
+    };
+
+    xhr.onerror = () => reject(new Error('Upload failed'));
+
+    xhr.open('PUT', './' + file.name, true);
+    xhr.send(file);
+  });
+}
+
 export function UploadZone() {
   const [isDragging, setIsDragging] = useState(false);
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const config = getConfig();
+
+  const updateFile = useCallback((id: string, updates: Partial<UploadedFile>) => {
+    setFiles(prev => prev.map(f => f.id === id ? { ...f, ...updates } : f));
+  }, []);
 
   const uploadFile = useCallback(async (file: File) => {
     const id = crypto.randomUUID();
@@ -40,45 +79,21 @@ export function UploadZone() {
     setFiles(prev => [...prev, uploadedFile]);
 
     try {
-      const xhr = new XMLHttpRequest();
-      
-      xhr.upload.addEventListener('progress', (e) => {
-        if (e.lengthComputable) {
-          const progress = Math.round((e.loaded / e.total) * 100);
-          setFiles(prev => prev.map(f => 
-            f.id === id ? { ...f, progress } : f
-          ));
-        }
+      const result = await createFileUploader(
+        file,
+        (progress) => updateFile(id, { progress })
+      );
+      updateFile(id, {
+        status: 'complete',
+        url: result.url,
+        deletionToken: result.deletionToken,
+        progress: 100,
       });
-
-      await new Promise<void>((resolve, reject) => {
-        xhr.onreadystatechange = () => {
-          if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-              const url = xhr.responseText.trim();
-              const deletionToken = xhr.getResponseHeader('X-Url-Delete')?.split('/').pop();
-              setFiles(prev => prev.map(f => 
-                f.id === id ? { ...f, status: 'complete', url, deletionToken, progress: 100 } : f
-              ));
-              resolve();
-            } else {
-              setFiles(prev => prev.map(f => 
-                f.id === id ? { ...f, status: 'error', error: `Upload failed (${xhr.status})` } : f
-              ));
-              reject(new Error(`Upload failed: ${xhr.status}`));
-            }
-          }
-        };
-
-        xhr.open('PUT', './' + file.name, true);
-        xhr.send(file);
-      });
-    } catch {
-      setFiles(prev => prev.map(f => 
-        f.id === id ? { ...f, status: 'error', error: 'Upload failed' } : f
-      ));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Upload failed';
+      updateFile(id, { status: 'error', error: message });
     }
-  }, []);
+  }, [updateFile]);
 
   const handleFiles = useCallback((fileList: FileList | null) => {
     if (!fileList) return;
