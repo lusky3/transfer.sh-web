@@ -24,10 +24,10 @@ function parseMarkdown(md: string): string {
     .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 overflow-x-auto my-4"><code>$2</code></pre>')
     // Inline code
     .replace(/`([^`]+)`/g, '<code class="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-sm">$1</code>')
+    // Images (must come before links)
+    .replace(/!\[([^\]]{0,500})\]\(([^)\s]{1,2000})\)/g, '<img src="$2" alt="$1" class="max-w-full rounded-lg my-4" />')
     // Links
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary-600 dark:text-primary-400 hover:underline" target="_blank" rel="noopener">$1</a>')
-    // Images
-    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="max-w-full rounded-lg my-4" />')
+    .replace(/\[([^\]]{1,500})\]\(([^)\s]{1,2000})\)/g, '<a href="$2" class="text-primary-600 dark:text-primary-400 hover:underline" target="_blank" rel="noopener">$1</a>')
     // Blockquotes
     .replace(/^&gt; (.*$)/gim, '<blockquote class="border-l-4 border-gray-300 dark:border-gray-600 pl-4 italic my-4">$1</blockquote>')
     // Horizontal rules

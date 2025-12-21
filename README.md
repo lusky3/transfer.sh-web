@@ -41,7 +41,7 @@ npm run build
 docker compose up
 ```
 
-Then open [http://localhost:8080]
+Then open <http://localhost:8080>
 
 ## Production Deployment
 
