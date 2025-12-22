@@ -21,32 +21,30 @@ function applyTheme(theme: Theme) {
 }
 
 export function useTheme(): { theme: Theme; setTheme: (newTheme: Theme) => void } {
-  const themeState = useState<Theme>(() => {
+  const [themeValue, setThemeValue] = useState<Theme>(() => {
     if (globalThis.window === undefined) return 'system';
     return (localStorage.getItem(STORAGE_KEY) as Theme) || 'system';
   });
-  const theme = themeState[0];
-  const setThemeState = themeState[1];
 
   const setTheme = useCallback((newTheme: Theme) => {
-    setThemeState(newTheme);
+    setThemeValue(newTheme);
     localStorage.setItem(STORAGE_KEY, newTheme);
     applyTheme(newTheme);
   }, []);
 
   useEffect(() => {
-    applyTheme(theme);
+    applyTheme(themeValue);
     
     const mediaQuery = globalThis.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = () => {
-      if (theme === 'system') {
+      if (themeValue === 'system') {
         applyTheme('system');
       }
     };
     
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [theme]);
+  }, [themeValue]);
 
-  return { theme, setTheme };
+  return { theme: themeValue, setTheme };
 }
