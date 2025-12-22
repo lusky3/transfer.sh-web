@@ -15,14 +15,14 @@ export function useFetchContent(url: string): FetchState<string> {
 
   useEffect(() => {
     setState({ data: null, loading: true, error: null });
-    
+
     fetch(url)
-      .then(res => {
+      .then((res) => {
         if (!res.ok) throw new Error('Failed to load file');
         return res.text();
       })
-      .then(data => setState({ data, loading: false, error: null }))
-      .catch(err => setState({ data: null, loading: false, error: err.message }));
+      .then((data) => setState({ data, loading: false, error: null }))
+      .catch((err) => setState({ data: null, loading: false, error: err.message }));
   }, [url]);
 
   return state;

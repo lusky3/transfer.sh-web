@@ -83,13 +83,16 @@ export function CodePreview({ url, filename }: CodePreviewProps) {
           <Copy className="w-4 h-4 text-gray-300" />
         )}
       </button>
-      
+
       <div className="bg-gray-900 rounded-lg overflow-hidden max-h-[70vh] overflow-auto">
         <Highlight theme={themes.nightOwl} code={code} language={language}>
           {({ className, style, tokens, getLineProps, getTokenProps }) => (
             <pre className={`${className} p-4 text-sm font-mono`} style={style}>
               {tokens.map((line, i) => {
-                const lineKey = `line-${i}-${line.map(t => t.content).join('').slice(0, 20)}`;
+                const lineKey = `line-${i}-${line
+                  .map((t) => t.content)
+                  .join('')
+                  .slice(0, 20)}`;
                 return (
                   <div key={lineKey} {...getLineProps({ line })} className="table-row">
                     <span className="table-cell pr-4 text-gray-500 select-none text-right w-12">

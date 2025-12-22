@@ -1,20 +1,22 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
-import { UploadZone } from './UploadZone'
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { UploadZone } from './UploadZone';
 
 // Mock crypto.randomUUID
-let uuidCounter = 0
+let uuidCounter = 0;
 vi.stubGlobal('crypto', {
   randomUUID: () => `test-uuid-${++uuidCounter}`,
-})
+});
 
 // Helper to create mock XHR
-function createMockXHR(options: {
-  status?: number
-  responseText?: string
-  deletionHeader?: string | null
-} = {}) {
-  const { status = 200, responseText = '', deletionHeader = null } = options
+function createMockXHR(
+  options: {
+    status?: number;
+    responseText?: string;
+    deletionHeader?: string | null;
+  } = {}
+) {
+  const { status = 200, responseText = '', deletionHeader = null } = options;
   return {
     open: vi.fn(),
     send: vi.fn(),
@@ -24,314 +26,347 @@ function createMockXHR(options: {
     status,
     responseText,
     getResponseHeader: vi.fn().mockReturnValue(deletionHeader),
-  }
+  };
 }
 
 describe('UploadZone', () => {
   beforeEach(() => {
-    vi.restoreAllMocks()
-    uuidCounter = 0
-  })
+    vi.restoreAllMocks();
+    uuidCounter = 0;
+  });
 
   it('renders drop zone', () => {
-    render(<UploadZone />)
-    expect(screen.getByText(/Drag & drop files here/)).toBeInTheDocument()
-  })
+    render(<UploadZone />);
+    expect(screen.getByText(/Drag & drop files here/)).toBeInTheDocument();
+  });
 
   it('renders browse text', () => {
-    render(<UploadZone />)
-    expect(screen.getByText('browse')).toBeInTheDocument()
-  })
+    render(<UploadZone />);
+    expect(screen.getByText('browse')).toBeInTheDocument();
+  });
 
   it('shows drag state when dragging over', () => {
-    render(<UploadZone />)
-    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!
-    
-    fireEvent.dragOver(dropZone)
-    expect(screen.getByText('Drop files here')).toBeInTheDocument()
-  })
+    render(<UploadZone />);
+    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
+
+    fireEvent.dragOver(dropZone);
+    expect(screen.getByText('Drop files here')).toBeInTheDocument();
+  });
 
   it('resets drag state on drag leave', () => {
-    render(<UploadZone />)
-    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!
-    
-    fireEvent.dragOver(dropZone)
-    fireEvent.dragLeave(dropZone)
-    expect(screen.getByText(/Drag & drop files here/)).toBeInTheDocument()
-  })
+    render(<UploadZone />);
+    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
+
+    fireEvent.dragOver(dropZone);
+    fireEvent.dragLeave(dropZone);
+    expect(screen.getByText(/Drag & drop files here/)).toBeInTheDocument();
+  });
 
   it('has hidden file input', () => {
-    const { container } = render(<UploadZone />)
-    const input = container.querySelector('input[type="file"]')
-    expect(input).toHaveClass('hidden')
-    expect(input).toHaveAttribute('multiple')
-  })
+    const { container } = render(<UploadZone />);
+    const input = container.querySelector('input[type="file"]');
+    expect(input).toHaveClass('hidden');
+    expect(input).toHaveAttribute('multiple');
+  });
 
   it('opens file dialog when clicking drop zone', () => {
-    const { container } = render(<UploadZone />)
-    const input = container.querySelector('input[type="file"]') as HTMLInputElement
-    const clickSpy = vi.spyOn(input, 'click')
-    
-    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!
-    fireEvent.click(dropZone)
-    
-    expect(clickSpy).toHaveBeenCalled()
-  })
+    const { container } = render(<UploadZone />);
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    const clickSpy = vi.spyOn(input, 'click');
+
+    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
+    fireEvent.click(dropZone);
+
+    expect(clickSpy).toHaveBeenCalled();
+  });
 
   it('uploads file when dropped', async () => {
     const mockXHR = createMockXHR({
       responseText: 'https://transfer.sh/abc123/test.txt',
       deletionHeader: 'https://transfer.sh/abc123/test.txt/delete123',
-    })
-    vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
+    });
+    vi.stubGlobal(
+      'XMLHttpRequest',
+      vi.fn(() => mockXHR)
+    );
 
-    render(<UploadZone />)
-    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!
-    
-    const file = new File(['test content'], 'test.txt', { type: 'text/plain' })
-    const dataTransfer = { files: [file] }
-    
-    fireEvent.drop(dropZone, { dataTransfer })
-    
+    render(<UploadZone />);
+    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
+
+    const file = new File(['test content'], 'test.txt', { type: 'text/plain' });
+    const dataTransfer = { files: [file] };
+
+    fireEvent.drop(dropZone, { dataTransfer });
+
     await act(async () => {
-      if (mockXHR.onload) mockXHR.onload()
-    })
+      if (mockXHR.onload) mockXHR.onload();
+    });
 
     await waitFor(() => {
-      expect(screen.getByText('test.txt')).toBeInTheDocument()
-    })
-  })
+      expect(screen.getByText('test.txt')).toBeInTheDocument();
+    });
+  });
 
   it('shows file size', async () => {
     const mockXHR = createMockXHR({
       responseText: 'https://transfer.sh/abc123/test.txt',
-    })
-    vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
+    });
+    vi.stubGlobal(
+      'XMLHttpRequest',
+      vi.fn(() => mockXHR)
+    );
 
-    render(<UploadZone />)
-    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!
-    
-    const file = new File(['test content'], 'test.txt', { type: 'text/plain' })
-    const dataTransfer = { files: [file] }
-    
-    fireEvent.drop(dropZone, { dataTransfer })
-    
+    render(<UploadZone />);
+    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
+
+    const file = new File(['test content'], 'test.txt', { type: 'text/plain' });
+    const dataTransfer = { files: [file] };
+
+    fireEvent.drop(dropZone, { dataTransfer });
+
     await act(async () => {
-      if (mockXHR.onload) mockXHR.onload()
-    })
+      if (mockXHR.onload) mockXHR.onload();
+    });
 
     await waitFor(() => {
-      expect(screen.getByText(/Bytes/)).toBeInTheDocument()
-    })
-  })
+      expect(screen.getByText(/Bytes/)).toBeInTheDocument();
+    });
+  });
 
   it('allows removing uploaded file', async () => {
     const mockXHR = createMockXHR({
       responseText: 'https://transfer.sh/abc123/test.txt',
-    })
-    vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
+    });
+    vi.stubGlobal(
+      'XMLHttpRequest',
+      vi.fn(() => mockXHR)
+    );
 
-    render(<UploadZone />)
-    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!
-    
-    const file = new File(['test'], 'test.txt', { type: 'text/plain' })
-    fireEvent.drop(dropZone, { dataTransfer: { files: [file] } })
-    
+    render(<UploadZone />);
+    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
+
+    const file = new File(['test'], 'test.txt', { type: 'text/plain' });
+    fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
+
     await act(async () => {
-      if (mockXHR.onload) mockXHR.onload()
-    })
+      if (mockXHR.onload) mockXHR.onload();
+    });
 
     await waitFor(() => {
-      expect(screen.getByText('test.txt')).toBeInTheDocument()
-    })
+      expect(screen.getByText('test.txt')).toBeInTheDocument();
+    });
 
-    const removeButtons = screen.getAllByRole('button')
+    const removeButtons = screen.getAllByRole('button');
     // Find the remove button (not the drop zone)
-    const removeButton = removeButtons.find(btn => !btn.textContent?.includes('Drag'))!
-    fireEvent.click(removeButton)
-    
-    expect(screen.queryByText('test.txt')).not.toBeInTheDocument()
-  })
-})
+    const removeButton = removeButtons.find((btn) => !btn.textContent?.includes('Drag'))!;
+    fireEvent.click(removeButton);
 
+    expect(screen.queryByText('test.txt')).not.toBeInTheDocument();
+  });
+});
 
-  it('handles file input change', async () => {
-    const mockXHR = createMockXHR({
-      responseText: 'https://transfer.sh/abc123/test.txt',
-    })
-    vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
+it('handles file input change', async () => {
+  const mockXHR = createMockXHR({
+    responseText: 'https://transfer.sh/abc123/test.txt',
+  });
+  vi.stubGlobal(
+    'XMLHttpRequest',
+    vi.fn(() => mockXHR)
+  );
 
-    const { container } = render(<UploadZone />)
-    const input = container.querySelector('input[type="file"]') as HTMLInputElement
-    
-    const file = new File(['test'], 'input-file.txt', { type: 'text/plain' })
-    
-    await act(async () => {
-      fireEvent.change(input, { target: { files: [file] } })
-    })
+  const { container } = render(<UploadZone />);
+  const input = container.querySelector('input[type="file"]') as HTMLInputElement;
 
-    await act(async () => {
-      if (mockXHR.onload) mockXHR.onload()
-    })
+  const file = new File(['test'], 'input-file.txt', { type: 'text/plain' });
 
-    await waitFor(() => {
-      expect(screen.getByText('input-file.txt')).toBeInTheDocument()
-    })
-  })
+  await act(async () => {
+    fireEvent.change(input, { target: { files: [file] } });
+  });
 
-  it('shows upload progress', async () => {
-    let progressCallback: ((e: { lengthComputable: boolean; loaded: number; total: number }) => void) | null = null
-    const mockXHR = {
-      open: vi.fn(),
-      send: vi.fn(),
-      upload: { 
-        addEventListener: vi.fn((event: string, cb: (e: { lengthComputable: boolean; loaded: number; total: number }) => void) => {
+  await act(async () => {
+    if (mockXHR.onload) mockXHR.onload();
+  });
+
+  await waitFor(() => {
+    expect(screen.getByText('input-file.txt')).toBeInTheDocument();
+  });
+});
+
+it('shows upload progress', async () => {
+  let progressCallback:
+    | ((e: { lengthComputable: boolean; loaded: number; total: number }) => void)
+    | null = null;
+  const mockXHR = {
+    open: vi.fn(),
+    send: vi.fn(),
+    upload: {
+      addEventListener: vi.fn(
+        (
+          event: string,
+          cb: (e: { lengthComputable: boolean; loaded: number; total: number }) => void
+        ) => {
           if (event === 'progress') {
-            progressCallback = cb
+            progressCallback = cb;
           }
-        })
-      },
-      onload: null as (() => void) | null,
-      onerror: null as (() => void) | null,
-      status: 0,
-      responseText: '',
-      getResponseHeader: vi.fn().mockReturnValue(null),
+        }
+      ),
+    },
+    onload: null as (() => void) | null,
+    onerror: null as (() => void) | null,
+    status: 0,
+    responseText: '',
+    getResponseHeader: vi.fn().mockReturnValue(null),
+  };
+  vi.stubGlobal(
+    'XMLHttpRequest',
+    vi.fn(() => mockXHR)
+  );
+
+  render(<UploadZone />);
+  const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
+
+  const file = new File(['test content here'], 'progress-test.txt', { type: 'text/plain' });
+
+  await act(async () => {
+    fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
+  });
+
+  // Simulate progress event
+  await act(async () => {
+    if (progressCallback) {
+      progressCallback({ lengthComputable: true, loaded: 50, total: 100 });
     }
-    vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
+  });
 
-    render(<UploadZone />)
-    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!
-    
-    const file = new File(['test content here'], 'progress-test.txt', { type: 'text/plain' })
-    
-    await act(async () => {
-      fireEvent.drop(dropZone, { dataTransfer: { files: [file] } })
-    })
+  // File should be in uploading state
+  expect(screen.getByText('progress-test.txt')).toBeInTheDocument();
+});
 
-    // Simulate progress event
-    await act(async () => {
-      if (progressCallback) {
-        progressCallback({ lengthComputable: true, loaded: 50, total: 100 })
-      }
-    })
+it('shows error state on upload failure', async () => {
+  const mockXHR = createMockXHR({ status: 500 });
+  vi.stubGlobal(
+    'XMLHttpRequest',
+    vi.fn(() => mockXHR)
+  );
 
-    // File should be in uploading state
-    expect(screen.getByText('progress-test.txt')).toBeInTheDocument()
-  })
+  render(<UploadZone />);
+  const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
 
-  it('shows error state on upload failure', async () => {
-    const mockXHR = createMockXHR({ status: 500 })
-    vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
+  const file = new File(['test'], 'error-file.txt', { type: 'text/plain' });
 
-    render(<UploadZone />)
-    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!
-    
-    const file = new File(['test'], 'error-file.txt', { type: 'text/plain' })
-    
-    await act(async () => {
-      fireEvent.drop(dropZone, { dataTransfer: { files: [file] } })
-    })
+  await act(async () => {
+    fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
+  });
 
-    await act(async () => {
-      if (mockXHR.onload) mockXHR.onload()
-    })
+  await act(async () => {
+    if (mockXHR.onload) mockXHR.onload();
+  });
 
-    await waitFor(() => {
-      expect(screen.getByText(/Upload failed/)).toBeInTheDocument()
-    })
-  })
+  await waitFor(() => {
+    expect(screen.getByText(/Upload failed/)).toBeInTheDocument();
+  });
+});
 
-  it('shows deletion token when provided', async () => {
-    const mockXHR = createMockXHR({
-      responseText: 'https://transfer.sh/abc123/test.txt',
-      deletionHeader: 'https://transfer.sh/abc123/test.txt/mytoken123',
-    })
-    vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
+it('shows deletion token when provided', async () => {
+  const mockXHR = createMockXHR({
+    responseText: 'https://transfer.sh/abc123/test.txt',
+    deletionHeader: 'https://transfer.sh/abc123/test.txt/mytoken123',
+  });
+  vi.stubGlobal(
+    'XMLHttpRequest',
+    vi.fn(() => mockXHR)
+  );
 
-    render(<UploadZone />)
-    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!
-    
-    const file = new File(['test'], 'token-file.txt', { type: 'text/plain' })
-    
-    await act(async () => {
-      fireEvent.drop(dropZone, { dataTransfer: { files: [file] } })
-    })
+  render(<UploadZone />);
+  const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
 
-    await act(async () => {
-      if (mockXHR.onload) mockXHR.onload()
-    })
+  const file = new File(['test'], 'token-file.txt', { type: 'text/plain' });
 
-    await waitFor(() => {
-      expect(screen.getByText('mytoken123')).toBeInTheDocument()
-    })
-  })
+  await act(async () => {
+    fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
+  });
 
-  it('shows download all buttons for multiple completed files', async () => {
-    const mockXHR = createMockXHR({
-      responseText: 'https://transfer.sh/abc123/file1.txt',
-    })
-    vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
+  await act(async () => {
+    if (mockXHR.onload) mockXHR.onload();
+  });
 
-    render(<UploadZone />)
-    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!
-    
-    // Upload first file
-    const file1 = new File(['test1'], 'file1.txt', { type: 'text/plain' })
-    await act(async () => {
-      fireEvent.drop(dropZone, { dataTransfer: { files: [file1] } })
-    })
-    await act(async () => {
-      if (mockXHR.onload) mockXHR.onload()
-    })
+  await waitFor(() => {
+    expect(screen.getByText('mytoken123')).toBeInTheDocument();
+  });
+});
 
-    // Upload second file
-    mockXHR.responseText = 'https://transfer.sh/def456/file2.txt'
-    const file2 = new File(['test2'], 'file2.txt', { type: 'text/plain' })
-    await act(async () => {
-      fireEvent.drop(dropZone, { dataTransfer: { files: [file2] } })
-    })
-    await act(async () => {
-      if (mockXHR.onload) mockXHR.onload()
-    })
+it('shows download all buttons for multiple completed files', async () => {
+  const mockXHR = createMockXHR({
+    responseText: 'https://transfer.sh/abc123/file1.txt',
+  });
+  vi.stubGlobal(
+    'XMLHttpRequest',
+    vi.fn(() => mockXHR)
+  );
 
-    await waitFor(() => {
-      expect(screen.getByText('Download all as ZIP')).toBeInTheDocument()
-      expect(screen.getByText('Download all as TAR.GZ')).toBeInTheDocument()
-    })
-  })
+  render(<UploadZone />);
+  const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
 
-  it('handles null fileList gracefully', () => {
-    const { container } = render(<UploadZone />)
-    const input = container.querySelector('input[type="file"]') as HTMLInputElement
-    
-    // Simulate change with null files
-    fireEvent.change(input, { target: { files: null } })
-    
-    // Should not crash, no files should be added (only the drop zone button exists)
-    const buttons = screen.getAllByRole('button')
-    expect(buttons).toHaveLength(1) // Only the drop zone
-  })
+  // Upload first file
+  const file1 = new File(['test1'], 'file1.txt', { type: 'text/plain' });
+  await act(async () => {
+    fireEvent.drop(dropZone, { dataTransfer: { files: [file1] } });
+  });
+  await act(async () => {
+    if (mockXHR.onload) mockXHR.onload();
+  });
 
-  it('renders completed file as link', async () => {
-    const mockXHR = createMockXHR({
-      responseText: 'https://transfer.sh/abc123/linked-file.txt',
-    })
-    vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
+  // Upload second file
+  mockXHR.responseText = 'https://transfer.sh/def456/file2.txt';
+  const file2 = new File(['test2'], 'file2.txt', { type: 'text/plain' });
+  await act(async () => {
+    fireEvent.drop(dropZone, { dataTransfer: { files: [file2] } });
+  });
+  await act(async () => {
+    if (mockXHR.onload) mockXHR.onload();
+  });
 
-    render(<UploadZone />)
-    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!
-    
-    const file = new File(['test'], 'linked-file.txt', { type: 'text/plain' })
-    await act(async () => {
-      fireEvent.drop(dropZone, { dataTransfer: { files: [file] } })
-    })
-    await act(async () => {
-      if (mockXHR.onload) mockXHR.onload()
-    })
+  await waitFor(() => {
+    expect(screen.getByText('Download all as ZIP')).toBeInTheDocument();
+    expect(screen.getByText('Download all as TAR.GZ')).toBeInTheDocument();
+  });
+});
 
-    await waitFor(() => {
-      const link = screen.getByRole('link', { name: 'linked-file.txt' })
-      expect(link).toHaveAttribute('href', 'https://transfer.sh/abc123/linked-file.txt')
-      expect(link).toHaveAttribute('target', '_blank')
-    })
-  })
+it('handles null fileList gracefully', () => {
+  const { container } = render(<UploadZone />);
+  const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+
+  // Simulate change with null files
+  fireEvent.change(input, { target: { files: null } });
+
+  // Should not crash, no files should be added (only the drop zone button exists)
+  const buttons = screen.getAllByRole('button');
+  expect(buttons).toHaveLength(1); // Only the drop zone
+});
+
+it('renders completed file as link', async () => {
+  const mockXHR = createMockXHR({
+    responseText: 'https://transfer.sh/abc123/linked-file.txt',
+  });
+  vi.stubGlobal(
+    'XMLHttpRequest',
+    vi.fn(() => mockXHR)
+  );
+
+  render(<UploadZone />);
+  const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
+
+  const file = new File(['test'], 'linked-file.txt', { type: 'text/plain' });
+  await act(async () => {
+    fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
+  });
+  await act(async () => {
+    if (mockXHR.onload) mockXHR.onload();
+  });
+
+  await waitFor(() => {
+    const link = screen.getByRole('link', { name: 'linked-file.txt' });
+    expect(link).toHaveAttribute('href', 'https://transfer.sh/abc123/linked-file.txt');
+    expect(link).toHaveAttribute('target', '_blank');
+  });
+});

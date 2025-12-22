@@ -1,8 +1,21 @@
-import { Terminal as TerminalIcon, Link, HardDrive, Clock, Gift, Lock, Download, Eye } from 'lucide-react';
+import {
+  Terminal as TerminalIcon,
+  Link,
+  HardDrive,
+  Clock,
+  Gift,
+  Lock,
+  Download,
+  Eye,
+} from 'lucide-react';
 import { getConfig } from '../types/config';
 
 const baseFeatures = [
-  { icon: TerminalIcon, title: 'Made for the shell', description: 'Upload files directly from your terminal' },
+  {
+    icon: TerminalIcon,
+    title: 'Made for the shell',
+    description: 'Upload files directly from your terminal',
+  },
   { icon: Link, title: 'Share with a URL', description: 'Get a unique link for every file' },
   { icon: Gift, title: 'Free to use', description: 'No account required' },
   { icon: Lock, title: 'Encrypt your files', description: 'Use GPG or OpenSSL encryption' },
@@ -12,7 +25,7 @@ const baseFeatures = [
 
 export function Features() {
   const config = getConfig();
-  
+
   const features = [
     ...baseFeatures.slice(0, 2),
     {
@@ -32,7 +45,7 @@ export function Features() {
     <section className="py-16 bg-gray-50 dark:bg-gray-900/50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-2xl font-semibold text-center mb-12">Features</h2>
-        
+
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {features.map(({ icon: Icon, title, description }) => (
             <div key={title} className="text-center p-4">

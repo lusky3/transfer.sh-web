@@ -15,9 +15,7 @@ export function Terminal({ children, title }: TerminalProps) {
         <div className="terminal-dot bg-green-500" />
         {title && <span className="ml-2 text-gray-400 text-xs">{title}</span>}
       </div>
-      <div className="terminal-body">
-        {children}
-      </div>
+      <div className="terminal-body">{children}</div>
     </div>
   );
 }

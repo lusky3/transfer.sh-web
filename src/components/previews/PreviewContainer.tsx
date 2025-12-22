@@ -14,16 +14,12 @@ const variantStyles = {
   bordered: 'bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800',
 };
 
-export function PreviewContainer({ 
-  children, 
+export function PreviewContainer({
+  children,
   variant = 'default',
-  className = '' 
+  className = '',
 }: PreviewContainerProps) {
-  return (
-    <div className={`${variantStyles[variant]} ${className}`}>
-      {children}
-    </div>
-  );
+  return <div className={`${variantStyles[variant]} ${className}`}>{children}</div>;
 }
 
 interface PreviewLoadingProps {

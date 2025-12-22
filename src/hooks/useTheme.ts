@@ -12,7 +12,7 @@ function getSystemTheme(): 'light' | 'dark' {
 function applyTheme(theme: Theme) {
   const root = document.documentElement;
   const effectiveTheme = theme === 'system' ? getSystemTheme() : theme;
-  
+
   if (effectiveTheme === 'dark') {
     root.classList.add('dark');
   } else {
@@ -34,14 +34,14 @@ export function useTheme(): { theme: Theme; setTheme: (newTheme: Theme) => void 
 
   useEffect(() => {
     applyTheme(themeValue);
-    
+
     const mediaQuery = globalThis.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = () => {
       if (themeValue === 'system') {
         applyTheme('system');
       }
     };
-    
+
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [themeValue]);

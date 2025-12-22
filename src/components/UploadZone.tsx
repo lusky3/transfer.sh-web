@@ -63,48 +63,54 @@ export function UploadZone() {
   const config = getConfig();
 
   const updateFile = useCallback((id: string, updates: Partial<UploadedFile>) => {
-    setFiles(prev => prev.map(f => f.id === id ? { ...f, ...updates } : f));
+    setFiles((prev) => prev.map((f) => (f.id === id ? { ...f, ...updates } : f)));
   }, []);
 
-  const uploadFile = useCallback(async (file: File) => {
-    const id = crypto.randomUUID();
-    const uploadedFile: UploadedFile = {
-      id,
-      name: file.name,
-      size: file.size,
-      progress: 0,
-      status: 'uploading',
-    };
+  const uploadFile = useCallback(
+    async (file: File) => {
+      const id = crypto.randomUUID();
+      const uploadedFile: UploadedFile = {
+        id,
+        name: file.name,
+        size: file.size,
+        progress: 0,
+        status: 'uploading',
+      };
 
-    setFiles(prev => [...prev, uploadedFile]);
+      setFiles((prev) => [...prev, uploadedFile]);
 
-    try {
-      const result = await createFileUploader(
-        file,
-        (progress) => updateFile(id, { progress })
-      );
-      updateFile(id, {
-        status: 'complete',
-        url: result.url,
-        deletionToken: result.deletionToken,
-        progress: 100,
-      });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Upload failed';
-      updateFile(id, { status: 'error', error: message });
-    }
-  }, [updateFile]);
+      try {
+        const result = await createFileUploader(file, (progress) => updateFile(id, { progress }));
+        updateFile(id, {
+          status: 'complete',
+          url: result.url,
+          deletionToken: result.deletionToken,
+          progress: 100,
+        });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Upload failed';
+        updateFile(id, { status: 'error', error: message });
+      }
+    },
+    [updateFile]
+  );
 
-  const handleFiles = useCallback((fileList: FileList | null) => {
-    if (!fileList) return;
-    Array.from(fileList).forEach(uploadFile);
-  }, [uploadFile]);
+  const handleFiles = useCallback(
+    (fileList: FileList | null) => {
+      if (!fileList) return;
+      Array.from(fileList).forEach(uploadFile);
+    },
+    [uploadFile]
+  );
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    handleFiles(e.dataTransfer.files);
-  }, [handleFiles]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+      handleFiles(e.dataTransfer.files);
+    },
+    [handleFiles]
+  );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -117,15 +123,16 @@ export function UploadZone() {
   }, []);
 
   const removeFile = useCallback((id: string) => {
-    setFiles(prev => prev.filter(f => f.id !== id));
+    setFiles((prev) => prev.filter((f) => f.id !== id));
   }, []);
 
-  const completedFiles = files.filter((f): f is UploadedFile & { url: string } => 
-    f.status === 'complete' && f.url !== undefined
+  const completedFiles = files.filter(
+    (f): f is UploadedFile & { url: string } => f.status === 'complete' && f.url !== undefined
   );
-  const downloadAllUrl = completedFiles.length > 1
-    ? `${config.webAddress}(${completedFiles.map(f => new URL(f.url).pathname).join(',')}).zip`
-    : null;
+  const downloadAllUrl =
+    completedFiles.length > 1
+      ? `${config.webAddress}(${completedFiles.map((f) => new URL(f.url).pathname).join(',')}).zip`
+      : null;
 
   return (
     <div className="space-y-4">
@@ -137,9 +144,10 @@ export function UploadZone() {
         onClick={() => fileInputRef.current?.click()}
         className={`
           relative w-full border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all
-          ${isDragging 
-            ? 'border-primary-500 bg-primary-50 dark:bg-primary-950/20' 
-            : 'border-gray-300 dark:border-gray-700 hover:border-primary-400 dark:hover:border-primary-600'
+          ${
+            isDragging
+              ? 'border-primary-500 bg-primary-50 dark:bg-primary-950/20'
+              : 'border-gray-300 dark:border-gray-700 hover:border-primary-400 dark:hover:border-primary-600'
           }
         `}
       >
@@ -150,9 +158,11 @@ export function UploadZone() {
           onChange={(e) => handleFiles(e.target.files)}
           className="hidden"
         />
-        
-        <Upload className={`w-12 h-12 mx-auto mb-4 ${isDragging ? 'text-primary-500' : 'text-gray-400'}`} />
-        
+
+        <Upload
+          className={`w-12 h-12 mx-auto mb-4 ${isDragging ? 'text-primary-500' : 'text-gray-400'}`}
+        />
+
         <p className="text-lg font-medium mb-1">
           {isDragging ? 'Drop files here' : 'Drag & drop files here'}
         </p>
@@ -163,13 +173,13 @@ export function UploadZone() {
 
       {files.length > 0 && (
         <div className="space-y-2">
-          {files.map(file => (
+          {files.map((file) => (
             <div
               key={file.id}
               className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg"
             >
               <FileIcon className="w-5 h-5 text-gray-400 flex-shrink-0" />
-              
+
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   {file.status === 'complete' && file.url ? (
@@ -188,7 +198,7 @@ export function UploadZone() {
                     {formatBytes(file.size)}
                   </span>
                 </div>
-                
+
                 {file.status === 'uploading' && (
                   <div className="mt-1 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                     <div
@@ -197,13 +207,16 @@ export function UploadZone() {
                     />
                   </div>
                 )}
-                
+
                 {file.status === 'complete' && file.deletionToken && (
                   <p className="text-xs text-gray-500 mt-1">
-                    Deletion token: <code className="bg-gray-200 dark:bg-gray-800 px-1 rounded">{file.deletionToken}</code>
+                    Deletion token:{' '}
+                    <code className="bg-gray-200 dark:bg-gray-800 px-1 rounded">
+                      {file.deletionToken}
+                    </code>
                   </p>
                 )}
-                
+
                 {file.status === 'error' && (
                   <p className="text-xs text-red-500 mt-1">{file.error}</p>
                 )}
@@ -213,12 +226,8 @@ export function UploadZone() {
                 {file.status === 'uploading' && (
                   <Loader2 className="w-5 h-5 text-primary-500 animate-spin" />
                 )}
-                {file.status === 'complete' && (
-                  <CheckCircle className="w-5 h-5 text-green-500" />
-                )}
-                {file.status === 'error' && (
-                  <AlertCircle className="w-5 h-5 text-red-500" />
-                )}
+                {file.status === 'complete' && <CheckCircle className="w-5 h-5 text-green-500" />}
+                {file.status === 'error' && <AlertCircle className="w-5 h-5 text-red-500" />}
               </div>
 
               <button
@@ -235,7 +244,10 @@ export function UploadZone() {
               <a href={downloadAllUrl} className="btn btn-secondary text-sm">
                 Download all as ZIP
               </a>
-              <a href={downloadAllUrl.replace('.zip', '.tar.gz')} className="btn btn-secondary text-sm">
+              <a
+                href={downloadAllUrl.replace('.zip', '.tar.gz')}
+                className="btn btn-secondary text-sm"
+              >
                 Download all as TAR.GZ
               </a>
             </div>

@@ -16,7 +16,7 @@ export function Examples() {
     <section className="py-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-2xl font-semibold text-center mb-12">Usage Examples</h2>
-        
+
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           <div>
             <h3 className="font-medium mb-3">Upload with cURL</h3>
@@ -26,7 +26,9 @@ export function Examples() {
               <CodeLine output={`${webAddress}${token}/hello.txt`} />
               <div className="mt-4" />
               <CodeLine comment="With max downloads and expiry" />
-              <CodeLine command={`curl -H "Max-Downloads: 1" -H "Max-Days: 5" --upload-file ./hello.txt ${webAddress}hello.txt`} />
+              <CodeLine
+                command={`curl -H "Max-Downloads: 1" -H "Max-Days: 5" --upload-file ./hello.txt ${webAddress}hello.txt`}
+              />
               <CodeLine output={`${webAddress}${token}/hello.txt`} />
             </Terminal>
           </div>
@@ -34,7 +36,9 @@ export function Examples() {
           <div>
             <h3 className="font-medium mb-3">Shell Function</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-              Add this to your <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">.bashrc</code> or <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">.zshrc</code>:
+              Add this to your{' '}
+              <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">.bashrc</code> or{' '}
+              <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">.zshrc</code>:
             </p>
             <CopyableCode code={shellFunction} />
             <Terminal title="Usage">
@@ -46,10 +50,7 @@ export function Examples() {
         </div>
 
         <div className="text-center">
-          <button
-            onClick={() => setShowMore(!showMore)}
-            className="btn btn-secondary"
-          >
+          <button onClick={() => setShowMore(!showMore)} className="btn btn-secondary">
             {showMore ? 'Show less' : 'More examples'}
             {showMore ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>
@@ -60,10 +61,14 @@ export function Examples() {
             <div>
               <h3 className="font-medium mb-3">Multiple Files</h3>
               <Terminal>
-                <CodeLine command={`curl -i -F filedata=@/tmp/hello.txt -F filedata=@/tmp/hello2.txt ${webAddress}`} />
+                <CodeLine
+                  command={`curl -i -F filedata=@/tmp/hello.txt -F filedata=@/tmp/hello2.txt ${webAddress}`}
+                />
                 <div className="mt-4" />
                 <CodeLine comment="Download as archive" />
-                <CodeLine command={`curl ${webAddress}(${token}/hello.txt,${token2}/world.txt).zip`} />
+                <CodeLine
+                  command={`curl ${webAddress}(${token}/hello.txt,${token2}/world.txt).zip`}
+                />
               </Terminal>
             </div>
 
@@ -71,10 +76,14 @@ export function Examples() {
               <h3 className="font-medium mb-3">Encrypt with GPG</h3>
               <Terminal>
                 <CodeLine comment="Encrypt and upload" />
-                <CodeLine command={`cat /tmp/hello.txt | gpg -ac -o- | curl -X PUT --upload-file "-" ${webAddress}test.txt`} />
+                <CodeLine
+                  command={`cat /tmp/hello.txt | gpg -ac -o- | curl -X PUT --upload-file "-" ${webAddress}test.txt`}
+                />
                 <div className="mt-4" />
                 <CodeLine comment="Download and decrypt" />
-                <CodeLine command={`curl ${webAddress}${token}/test.txt | gpg -o- > /tmp/hello.txt`} />
+                <CodeLine
+                  command={`curl ${webAddress}${token}/test.txt | gpg -o- > /tmp/hello.txt`}
+                />
               </Terminal>
             </div>
 
@@ -82,17 +91,26 @@ export function Examples() {
               <h3 className="font-medium mb-3">Encrypt with OpenSSL</h3>
               <Terminal>
                 <CodeLine comment="Encrypt and upload" />
-                <CodeLine command={`cat /tmp/hello.txt | openssl aes-256-cbc -pbkdf2 -e | curl -X PUT --upload-file "-" ${webAddress}test.txt`} />
+                <CodeLine
+                  command={`cat /tmp/hello.txt | openssl aes-256-cbc -pbkdf2 -e | curl -X PUT --upload-file "-" ${webAddress}test.txt`}
+                />
                 <div className="mt-4" />
                 <CodeLine comment="Download and decrypt" />
-                <CodeLine command={`curl ${webAddress}${token}/test.txt | openssl aes-256-cbc -pbkdf2 -d > /tmp/hello.txt`} />
+                <CodeLine
+                  command={`curl ${webAddress}${token}/test.txt | openssl aes-256-cbc -pbkdf2 -d > /tmp/hello.txt`}
+                />
               </Terminal>
             </div>
 
             <div>
               <h3 className="font-medium mb-3">PowerShell (Windows)</h3>
               <Terminal>
-                <CodeLine command={String.raw`Invoke-WebRequest -Method PUT -InFile .\file.txt ` + `${webAddress}file.txt`} />
+                <CodeLine
+                  command={
+                    String.raw`Invoke-WebRequest -Method PUT -InFile .\file.txt ` +
+                    `${webAddress}file.txt`
+                  }
+                />
               </Terminal>
             </div>
           </div>

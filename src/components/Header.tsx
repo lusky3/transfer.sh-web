@@ -17,7 +17,7 @@ export function Header({ showUploadLink = false }: HeaderProps) {
             <Upload className="w-6 h-6 text-primary-600" />
             <span>{config.hostname}</span>
           </a>
-          
+
           <div className="flex items-center gap-4">
             {showUploadLink && (
               <a href="/" className="btn btn-ghost text-sm">

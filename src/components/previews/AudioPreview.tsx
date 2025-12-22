@@ -12,9 +12,9 @@ export function AudioPreview({ url, filename }: AudioPreviewProps) {
         <div className="w-32 h-32 bg-gray-200 dark:bg-gray-800 rounded-full flex items-center justify-center">
           <Music className="w-16 h-16 text-gray-400" />
         </div>
-        
+
         <p className="font-medium text-center break-all">{filename}</p>
-        
+
         <audio controls className="w-full max-w-md">
           <source src={url} />
           <track kind="captions" />

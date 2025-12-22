@@ -1,4 +1,4 @@
-import '@testing-library/jest-dom/vitest'
+import '@testing-library/jest-dom/vitest';
 
 // Mock window.__CONFIG__ for tests
 window.__CONFIG__ = {
@@ -10,7 +10,7 @@ window.__CONFIG__ = {
   purgeTime: '14 days',
   sampleToken: 'abc123',
   sampleToken2: 'def456',
-}
+};
 
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -25,4 +25,4 @@ Object.defineProperty(window, 'matchMedia', {
     removeEventListener: () => {},
     dispatchEvent: () => false,
   }),
-})
+});

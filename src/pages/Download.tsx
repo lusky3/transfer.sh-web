@@ -25,7 +25,9 @@ export function DownloadPage() {
   const [copied, setCopied] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletionToken, setDeletionToken] = useState('');
-  const [deleteStatus, setDeleteStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [deleteStatus, setDeleteStatus] = useState<'idle' | 'loading' | 'success' | 'error'>(
+    'idle'
+  );
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(config.downloadUrl);
@@ -35,13 +37,13 @@ export function DownloadPage() {
 
   const handleDelete = async () => {
     if (!deletionToken) return;
-    
+
     setDeleteStatus('loading');
     try {
       const response = await fetch(`${config.downloadUrl}/${deletionToken}`, {
         method: 'DELETE',
       });
-      
+
       if (response.ok) {
         setDeleteStatus('success');
       } else {
@@ -72,7 +74,7 @@ export function DownloadPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header showUploadLink />
-      
+
       <main className="flex-1 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* File Info */}
@@ -85,21 +87,15 @@ export function DownloadPage() {
           </div>
 
           {/* Preview */}
-          <div className="mb-6">
-            {renderPreview()}
-          </div>
+          <div className="mb-6">{renderPreview()}</div>
 
           {/* Actions */}
           <div className="flex flex-wrap gap-3">
-            <a
-              href={config.downloadUrl}
-              download={config.filename}
-              className="btn btn-primary"
-            >
+            <a href={config.downloadUrl} download={config.filename} className="btn btn-primary">
               <Download className="w-4 h-4" />
               Download
             </a>
-            
+
             <button onClick={handleCopy} className="btn btn-secondary">
               {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               {copied ? 'Copied!' : 'Copy Link'}
@@ -121,7 +117,7 @@ export function DownloadPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
           <div className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-md w-full shadow-xl">
             <h2 className="text-xl font-semibold mb-4">Delete File</h2>
-            
+
             {deleteStatus === 'success' ? (
               <div className="text-center py-4">
                 <Check className="w-12 h-12 mx-auto mb-2 text-green-500" />
@@ -132,7 +128,7 @@ export function DownloadPage() {
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
                   Enter the deletion token to permanently delete this file.
                 </p>
-                
+
                 <input
                   type="text"
                   value={deletionToken}
@@ -140,18 +136,15 @@ export function DownloadPage() {
                   placeholder="Deletion token"
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 mb-4"
                 />
-                
+
                 {deleteStatus === 'error' && (
                   <p className="text-red-500 text-sm mb-4">
                     Failed to delete file. Please check your deletion token.
                   </p>
                 )}
-                
+
                 <div className="flex gap-3 justify-end">
-                  <button
-                    onClick={() => setShowDeleteModal(false)}
-                    className="btn btn-ghost"
-                  >
+                  <button onClick={() => setShowDeleteModal(false)} className="btn btn-ghost">
                     Cancel
                   </button>
                   <button

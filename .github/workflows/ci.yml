@@ -25,6 +25,12 @@ jobs:
       - name: Type check
         run: npx tsc --noEmit
 
+      - name: Lint
+        run: npm run lint
+
+      - name: Format Check
+        run: npm run format:check
+
       - name: Run tests with coverage
         run: npm run test:coverage
 
@@ -44,6 +50,28 @@ jobs:
           name: coverage
           path: coverage/
           retention-days: 7
+
+  go-check:
+    name: Go Verification
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download dist
+        uses: actions/download-artifact@v6
+        with:
+          name: dist
+          path: dist/
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.25.5'
+
+      - name: Verify Go Build
+        run: go build -v ./...
+
 
   sonarqube:
     name: SonarQube

@@ -7,20 +7,24 @@ interface GenericPreviewProps {
 
 function getFileIcon(contentType: string, filename: string) {
   const ext = filename.split('.').pop()?.toLowerCase() || '';
-  
-  if (contentType.includes('zip') || contentType.includes('tar') || contentType.includes('rar') || 
-      ['zip', 'tar', 'gz', 'rar', '7z', 'bz2'].includes(ext)) {
+
+  if (
+    contentType.includes('zip') ||
+    contentType.includes('tar') ||
+    contentType.includes('rar') ||
+    ['zip', 'tar', 'gz', 'rar', '7z', 'bz2'].includes(ext)
+  ) {
     return FileArchive;
   }
-  
+
   if (contentType.includes('spreadsheet') || ['xlsx', 'xls', 'csv'].includes(ext)) {
     return FileSpreadsheet;
   }
-  
+
   if (contentType.includes('text') || contentType.includes('document')) {
     return FileText;
   }
-  
+
   return FileIcon;
 }
 
@@ -33,9 +37,7 @@ export function GenericPreview({ filename, contentType }: GenericPreviewProps) {
         <Icon className="w-24 h-24 text-gray-400" />
         <p className="text-lg font-medium text-center break-all">{filename}</p>
         <p className="text-sm text-gray-500">{contentType}</p>
-        <p className="text-sm text-gray-400">
-          Preview not available for this file type
-        </p>
+        <p className="text-sm text-gray-400">Preview not available for this file type</p>
       </div>
     </div>
   );

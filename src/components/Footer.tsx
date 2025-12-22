@@ -11,7 +11,7 @@ export function Footer() {
           <p className="text-sm text-gray-500 dark:text-gray-400">
             © {new Date().getFullYear()} {config.hostname}. Easy file sharing from the command line.
           </p>
-          
+
           <div className="flex items-center gap-4">
             <a
               href="https://github.com/dutchcoders/transfer.sh"
