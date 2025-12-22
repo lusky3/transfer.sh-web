@@ -41,10 +41,14 @@ function CopyButton({ text, label, className = '' }: CopyButtonProps) {
   return (
     <button
       onClick={handleCopy}
+      aria-label={copied ? 'Copied!' : `Copy ${label || 'to clipboard'}`}
       className={`inline-flex items-center gap-1 hover:text-primary-600 dark:hover:text-primary-400 transition-colors ${className}`}
-      title={`Copy ${label || 'to clipboard'}`}
     >
-      {copied ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+      {copied ? (
+        <Check className="w-3 h-3 text-green-500" aria-hidden="true" />
+      ) : (
+        <Copy className="w-3 h-3" aria-hidden="true" />
+      )}
     </button>
   );
 }
@@ -170,6 +174,7 @@ export function UploadZone() {
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onClick={() => fileInputRef.current?.click()}
+        aria-label="Upload files by dropping them here or clicking to browse"
         className={`
           relative w-full border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all
           ${
@@ -185,10 +190,12 @@ export function UploadZone() {
           multiple
           onChange={(e) => handleFiles(e.target.files)}
           className="hidden"
+          aria-label="File input"
         />
 
         <Upload
           className={`w-12 h-12 mx-auto mb-4 ${isDragging ? 'text-primary-500' : 'text-gray-400'}`}
+          aria-hidden="true"
         />
 
         <p className="text-lg font-medium mb-1">
@@ -200,13 +207,22 @@ export function UploadZone() {
       </button>
 
       {files.length > 0 && (
-        <div className="space-y-2">
+        <div className="space-y-2" role="list" aria-label="Uploaded files">
+          <div className="sr-only" aria-live="polite" aria-atomic="true">
+            {files.filter((f) => f.status === 'uploading').length > 0 &&
+              `Uploading ${files.filter((f) => f.status === 'uploading').length} file(s)`}
+            {files.filter((f) => f.status === 'complete').length > 0 &&
+              `${files.filter((f) => f.status === 'complete').length} file(s) uploaded successfully`}
+            {files.filter((f) => f.status === 'error').length > 0 &&
+              `${files.filter((f) => f.status === 'error').length} file(s) failed to upload`}
+          </div>
           {files.map((file) => (
             <div
               key={file.id}
+              role="listitem"
               className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg"
             >
-              <FileIcon className="w-5 h-5 text-gray-400 flex-shrink-0" />
+              <FileIcon className="w-5 h-5 text-gray-400 flex-shrink-0" aria-hidden="true" />
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
@@ -231,7 +247,14 @@ export function UploadZone() {
                 </div>
 
                 {file.status === 'uploading' && (
-                  <div className="mt-1 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div
+                    className="mt-1 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden"
+                    role="progressbar"
+                    aria-valuenow={file.progress}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={`Upload progress: ${file.progress}%`}
+                  >
                     <div
                       className="h-full bg-primary-500 transition-all duration-300"
                       style={{ width: `${file.progress}%` }}
@@ -256,10 +279,14 @@ export function UploadZone() {
 
               <div className="flex-shrink-0">
                 {file.status === 'uploading' && (
-                  <Loader2 className="w-5 h-5 text-primary-500 animate-spin" />
+                  <Loader2 className="w-5 h-5 text-primary-500 animate-spin" aria-hidden="true" />
                 )}
-                {file.status === 'complete' && <CheckCircle className="w-5 h-5 text-green-500" />}
-                {file.status === 'error' && <AlertCircle className="w-5 h-5 text-red-500" />}
+                {file.status === 'complete' && (
+                  <CheckCircle className="w-5 h-5 text-green-500" aria-hidden="true" />
+                )}
+                {file.status === 'error' && (
+                  <AlertCircle className="w-5 h-5 text-red-500" aria-hidden="true" />
+                )}
               </div>
 
               <button

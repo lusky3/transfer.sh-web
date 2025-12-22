@@ -17,12 +17,12 @@ export function App() {
     <div className="min-h-screen flex flex-col">
       <Header />
 
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         {/* Hero Section */}
-        <section className="py-16 md:py-24">
+        <section className="py-16 md:py-24" aria-labelledby="hero-heading">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              <h1 id="hero-heading" className="text-4xl md:text-5xl font-bold mb-4">
                 Easy file sharing from the command line
               </h1>
               <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
