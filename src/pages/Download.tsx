@@ -66,6 +66,8 @@ export function DownloadPage() {
         return <CodePreview url={config.downloadUrl} filename={config.filename} />;
       case 'markdown':
         return <MarkdownPreview url={config.downloadUrl} />;
+      case 'sandbox':
+        return <GenericPreview filename={config.filename} contentType={config.contentType} />;
       default:
         return <GenericPreview filename={config.filename} contentType={config.contentType} />;
     }

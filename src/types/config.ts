@@ -14,11 +14,10 @@ export interface DownloadConfig extends AppConfig {
   contentType: string;
   contentLength: string;
   downloadUrl: string;
-  previewType?: 'image' | 'video' | 'audio' | 'markdown' | 'code';
+  previewType?: 'image' | 'video' | 'audio' | 'markdown' | 'code' | 'sandbox';
 }
 
 declare global {
-  // eslint-disable-next-line no-var
   var __CONFIG__: AppConfig | DownloadConfig;
 }
 

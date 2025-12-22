@@ -1,9 +1,9 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import tailwindcss from '@tailwindcss/vite';
-import { resolve } from 'path';
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+import { resolve } from 'path'
 
-const __dirname = import.meta.dirname;
+const __dirname = import.meta.dirname
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
@@ -27,18 +27,19 @@ export default defineConfig({
         'download-audio': resolve(__dirname, 'src/download-audio.html'),
         'download-markdown': resolve(__dirname, 'src/download-markdown.html'),
         'download-code': resolve(__dirname, 'src/download-code.html'),
+        'download-sandbox': resolve(__dirname, 'src/download.sandbox.html'),
         '404': resolve(__dirname, 'src/404.html'),
       },
       output: {
         assetFileNames: (assetInfo) => {
           if (assetInfo.name?.endsWith('.css')) {
-            return 'styles/[name]-[hash][extname]';
+            return 'styles/[name]-[hash][extname]'
           }
-          return 'scripts/[name]-[hash][extname]';
+          return 'scripts/[name]-[hash][extname]'
         },
         chunkFileNames: 'scripts/[name]-[hash].js',
         entryFileNames: 'scripts/[name]-[hash].js',
       },
     },
   },
-});
+})

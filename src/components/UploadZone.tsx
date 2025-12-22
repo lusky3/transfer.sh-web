@@ -129,9 +129,9 @@ export function UploadZone() {
   const completedFiles = files.filter(
     (f): f is UploadedFile & { url: string } => f.status === 'complete' && f.url !== undefined
   );
-  const downloadAllUrl =
+  const downloadAllBase =
     completedFiles.length > 1
-      ? `${config.webAddress}(${completedFiles.map((f) => new URL(f.url).pathname).join(',')}).zip`
+      ? `${config.webAddress}(${completedFiles.map((f) => new URL(f.url).pathname).join(',')})`
       : null;
 
   return (
@@ -239,15 +239,12 @@ export function UploadZone() {
             </div>
           ))}
 
-          {downloadAllUrl && (
+          {downloadAllBase && (
             <div className="flex gap-2 pt-2">
-              <a href={downloadAllUrl} className="btn btn-secondary text-sm">
+              <a href={`${downloadAllBase}.zip`} className="btn btn-secondary text-sm">
                 Download all as ZIP
               </a>
-              <a
-                href={downloadAllUrl.replace('.zip', '.tar.gz')}
-                className="btn btn-secondary text-sm"
-              >
+              <a href={`${downloadAllBase}.tar.gz`} className="btn btn-secondary text-sm">
                 Download all as TAR.GZ
               </a>
             </div>
