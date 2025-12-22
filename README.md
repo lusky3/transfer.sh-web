@@ -2,6 +2,11 @@
 
 [![CI](https://github.com/lusky3/transfer.sh-web/actions/workflows/ci.yml/badge.svg)](https://github.com/lusky3/transfer.sh-web/actions/workflows/ci.yml)
 [![Release](https://github.com/lusky3/transfer.sh-web/actions/workflows/release.yml/badge.svg)](https://github.com/lusky3/transfer.sh-web/actions/workflows/release.yml)
+[![GitHub release](https://img.shields.io/github/v/release/lusky3/transfer.sh-web)](https://github.com/lusky3/transfer.sh-web/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](https://nodejs.org/)
+[![GitHub stars](https://img.shields.io/github/stars/lusky3/transfer.sh-web)](https://github.com/lusky3/transfer.sh-web/stargazers)
+
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=lusky3_transfer.sh-web&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=lusky3_transfer.sh-web)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=lusky3_transfer.sh-web&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=lusky3_transfer.sh-web)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=lusky3_transfer.sh-web&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=lusky3_transfer.sh-web)
