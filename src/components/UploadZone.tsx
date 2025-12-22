@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { Upload, X, CheckCircle, AlertCircle, FileIcon, Loader2 } from 'lucide-react';
+import { Upload, X, CheckCircle, AlertCircle, FileIcon, Loader2, Copy, Check } from 'lucide-react';
 import { getConfig } from '../types/config';
 
 interface UploadedFile {
@@ -19,6 +19,34 @@ function formatBytes(bytes: number): string {
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+interface CopyButtonProps {
+  readonly text: string;
+  readonly label?: string;
+  readonly className?: string;
+}
+
+function CopyButton({ text, label, className = '' }: CopyButtonProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      className={`inline-flex items-center gap-1 hover:text-primary-600 dark:hover:text-primary-400 transition-colors ${className}`}
+      title={`Copy ${label || 'to clipboard'}`}
+    >
+      {copied ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+    </button>
+  );
 }
 
 interface UploadResult {
@@ -183,14 +211,17 @@ export function UploadZone() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   {file.status === 'complete' && file.url ? (
-                    <a
-                      href={file.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-medium truncate text-primary-600 dark:text-primary-400 hover:underline"
-                    >
-                      {file.name}
-                    </a>
+                    <>
+                      <a
+                        href={file.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium truncate text-primary-600 dark:text-primary-400 hover:underline"
+                      >
+                        {file.name}
+                      </a>
+                      <CopyButton text={file.url} label="link" className="text-gray-400" />
+                    </>
                   ) : (
                     <span className="font-medium truncate">{file.name}</span>
                   )}
@@ -209,11 +240,12 @@ export function UploadZone() {
                 )}
 
                 {file.status === 'complete' && file.deletionToken && (
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
                     Deletion token:{' '}
                     <code className="bg-gray-200 dark:bg-gray-800 px-1 rounded">
                       {file.deletionToken}
                     </code>
+                    <CopyButton text={file.deletionToken} label="deletion token" />
                   </p>
                 )}
 
@@ -232,6 +264,7 @@ export function UploadZone() {
 
               <button
                 onClick={() => removeFile(file.id)}
+                aria-label="Remove file"
                 className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <X className="w-4 h-4" />

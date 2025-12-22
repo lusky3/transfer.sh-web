@@ -8,8 +8,16 @@ vi.stubGlobal('crypto', {
   randomUUID: () => `test-uuid-${++uuidCounter}`,
 });
 
-// Helper to create mock XHR
-function createMockXHR(
+// Mock clipboard API
+const mockClipboard = {
+  writeText: vi.fn().mockResolvedValue(undefined),
+};
+vi.stubGlobal('navigator', {
+  clipboard: mockClipboard,
+});
+
+// Helper to create mock XHR class
+function createMockXHRClass(
   options: {
     status?: number;
     responseText?: string;
@@ -17,15 +25,16 @@ function createMockXHR(
   } = {}
 ) {
   const { status = 200, responseText = '', deletionHeader = null } = options;
-  return {
-    open: vi.fn(),
-    send: vi.fn(),
-    upload: { addEventListener: vi.fn() },
-    onload: null as (() => void) | null,
-    onerror: null as (() => void) | null,
-    status,
-    responseText,
-    getResponseHeader: vi.fn().mockReturnValue(deletionHeader),
+
+  return class MockXHR {
+    open = vi.fn();
+    send = vi.fn();
+    upload = { addEventListener: vi.fn() };
+    onload: (() => void) | null = null;
+    onerror: (() => void) | null = null;
+    status = status;
+    responseText = responseText;
+    getResponseHeader = vi.fn().mockReturnValue(deletionHeader);
   };
 }
 
@@ -81,14 +90,17 @@ describe('UploadZone', () => {
   });
 
   it('uploads file when dropped', async () => {
-    const mockXHR = createMockXHR({
+    let xhrInstance: InstanceType<ReturnType<typeof createMockXHRClass>> | null = null;
+    const MockXHR = class extends createMockXHRClass({
       responseText: 'https://transfer.sh/abc123/test.txt',
       deletionHeader: 'https://transfer.sh/abc123/test.txt/delete123',
-    });
-    vi.stubGlobal(
-      'XMLHttpRequest',
-      vi.fn(() => mockXHR)
-    );
+    }) {
+      constructor() {
+        super();
+        xhrInstance = this;
+      }
+    };
+    vi.stubGlobal('XMLHttpRequest', MockXHR);
 
     render(<UploadZone />);
     const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
@@ -99,7 +111,7 @@ describe('UploadZone', () => {
     fireEvent.drop(dropZone, { dataTransfer });
 
     await act(async () => {
-      if (mockXHR.onload) mockXHR.onload();
+      if (xhrInstance?.onload) xhrInstance.onload();
     });
 
     await waitFor(() => {
@@ -108,13 +120,16 @@ describe('UploadZone', () => {
   });
 
   it('shows file size', async () => {
-    const mockXHR = createMockXHR({
+    let xhrInstance: InstanceType<ReturnType<typeof createMockXHRClass>> | null = null;
+    const MockXHR = class extends createMockXHRClass({
       responseText: 'https://transfer.sh/abc123/test.txt',
-    });
-    vi.stubGlobal(
-      'XMLHttpRequest',
-      vi.fn(() => mockXHR)
-    );
+    }) {
+      constructor() {
+        super();
+        xhrInstance = this;
+      }
+    };
+    vi.stubGlobal('XMLHttpRequest', MockXHR);
 
     render(<UploadZone />);
     const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
@@ -125,7 +140,7 @@ describe('UploadZone', () => {
     fireEvent.drop(dropZone, { dataTransfer });
 
     await act(async () => {
-      if (mockXHR.onload) mockXHR.onload();
+      if (xhrInstance?.onload) xhrInstance.onload();
     });
 
     await waitFor(() => {
@@ -134,13 +149,16 @@ describe('UploadZone', () => {
   });
 
   it('allows removing uploaded file', async () => {
-    const mockXHR = createMockXHR({
+    let xhrInstance: InstanceType<ReturnType<typeof createMockXHRClass>> | null = null;
+    const MockXHR = class extends createMockXHRClass({
       responseText: 'https://transfer.sh/abc123/test.txt',
-    });
-    vi.stubGlobal(
-      'XMLHttpRequest',
-      vi.fn(() => mockXHR)
-    );
+    }) {
+      constructor() {
+        super();
+        xhrInstance = this;
+      }
+    };
+    vi.stubGlobal('XMLHttpRequest', MockXHR);
 
     render(<UploadZone />);
     const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
@@ -149,16 +167,14 @@ describe('UploadZone', () => {
     fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
 
     await act(async () => {
-      if (mockXHR.onload) mockXHR.onload();
+      if (xhrInstance?.onload) xhrInstance.onload();
     });
 
     await waitFor(() => {
       expect(screen.getByText('test.txt')).toBeInTheDocument();
     });
 
-    const removeButtons = screen.getAllByRole('button');
-    // Find the remove button (not the drop zone)
-    const removeButton = removeButtons.find((btn) => !btn.textContent?.includes('Drag'))!;
+    const removeButton = screen.getByRole('button', { name: 'Remove file' });
     fireEvent.click(removeButton);
 
     expect(screen.queryByText('test.txt')).not.toBeInTheDocument();
@@ -166,13 +182,16 @@ describe('UploadZone', () => {
 });
 
 it('handles file input change', async () => {
-  const mockXHR = createMockXHR({
+  let xhrInstance: InstanceType<ReturnType<typeof createMockXHRClass>> | null = null;
+  const MockXHR = class extends createMockXHRClass({
     responseText: 'https://transfer.sh/abc123/test.txt',
-  });
-  vi.stubGlobal(
-    'XMLHttpRequest',
-    vi.fn(() => mockXHR)
-  );
+  }) {
+    constructor() {
+      super();
+      xhrInstance = this;
+    }
+  };
+  vi.stubGlobal('XMLHttpRequest', MockXHR);
 
   const { container } = render(<UploadZone />);
   const input = container.querySelector('input[type="file"]') as HTMLInputElement;
@@ -184,7 +203,7 @@ it('handles file input change', async () => {
   });
 
   await act(async () => {
-    if (mockXHR.onload) mockXHR.onload();
+    if (xhrInstance?.onload) xhrInstance.onload();
   });
 
   await waitFor(() => {
@@ -196,10 +215,11 @@ it('shows upload progress', async () => {
   let progressCallback:
     | ((e: { lengthComputable: boolean; loaded: number; total: number }) => void)
     | null = null;
-  const mockXHR = {
-    open: vi.fn(),
-    send: vi.fn(),
-    upload: {
+
+  class MockXHR {
+    open = vi.fn();
+    send = vi.fn();
+    upload = {
       addEventListener: vi.fn(
         (
           event: string,
@@ -210,17 +230,14 @@ it('shows upload progress', async () => {
           }
         }
       ),
-    },
-    onload: null as (() => void) | null,
-    onerror: null as (() => void) | null,
-    status: 0,
-    responseText: '',
-    getResponseHeader: vi.fn().mockReturnValue(null),
-  };
-  vi.stubGlobal(
-    'XMLHttpRequest',
-    vi.fn(() => mockXHR)
-  );
+    };
+    onload: (() => void) | null = null;
+    onerror: (() => void) | null = null;
+    status = 0;
+    responseText = '';
+    getResponseHeader = vi.fn().mockReturnValue(null);
+  }
+  vi.stubGlobal('XMLHttpRequest', MockXHR);
 
   render(<UploadZone />);
   const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
@@ -243,11 +260,14 @@ it('shows upload progress', async () => {
 });
 
 it('shows error state on upload failure', async () => {
-  const mockXHR = createMockXHR({ status: 500 });
-  vi.stubGlobal(
-    'XMLHttpRequest',
-    vi.fn(() => mockXHR)
-  );
+  let xhrInstance: InstanceType<ReturnType<typeof createMockXHRClass>> | null = null;
+  const MockXHR = class extends createMockXHRClass({ status: 500 }) {
+    constructor() {
+      super();
+      xhrInstance = this;
+    }
+  };
+  vi.stubGlobal('XMLHttpRequest', MockXHR);
 
   render(<UploadZone />);
   const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
@@ -259,7 +279,7 @@ it('shows error state on upload failure', async () => {
   });
 
   await act(async () => {
-    if (mockXHR.onload) mockXHR.onload();
+    if (xhrInstance?.onload) xhrInstance.onload();
   });
 
   await waitFor(() => {
@@ -268,14 +288,17 @@ it('shows error state on upload failure', async () => {
 });
 
 it('shows deletion token when provided', async () => {
-  const mockXHR = createMockXHR({
+  let xhrInstance: InstanceType<ReturnType<typeof createMockXHRClass>> | null = null;
+  const MockXHR = class extends createMockXHRClass({
     responseText: 'https://transfer.sh/abc123/test.txt',
     deletionHeader: 'https://transfer.sh/abc123/test.txt/mytoken123',
-  });
-  vi.stubGlobal(
-    'XMLHttpRequest',
-    vi.fn(() => mockXHR)
-  );
+  }) {
+    constructor() {
+      super();
+      xhrInstance = this;
+    }
+  };
+  vi.stubGlobal('XMLHttpRequest', MockXHR);
 
   render(<UploadZone />);
   const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
@@ -287,7 +310,7 @@ it('shows deletion token when provided', async () => {
   });
 
   await act(async () => {
-    if (mockXHR.onload) mockXHR.onload();
+    if (xhrInstance?.onload) xhrInstance.onload();
   });
 
   await waitFor(() => {
@@ -296,13 +319,16 @@ it('shows deletion token when provided', async () => {
 });
 
 it('shows download all buttons for multiple completed files', async () => {
-  const mockXHR = createMockXHR({
-    responseText: 'https://transfer.sh/abc123/file1.txt',
-  });
-  vi.stubGlobal(
-    'XMLHttpRequest',
-    vi.fn(() => mockXHR)
-  );
+  const instances: InstanceType<ReturnType<typeof createMockXHRClass>>[] = [];
+  let responseText = 'https://transfer.sh/abc123/file1.txt';
+  const MockXHR = class extends createMockXHRClass({}) {
+    constructor() {
+      super();
+      this.responseText = responseText;
+      instances.push(this);
+    }
+  };
+  vi.stubGlobal('XMLHttpRequest', MockXHR);
 
   render(<UploadZone />);
   const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
@@ -313,17 +339,17 @@ it('shows download all buttons for multiple completed files', async () => {
     fireEvent.drop(dropZone, { dataTransfer: { files: [file1] } });
   });
   await act(async () => {
-    if (mockXHR.onload) mockXHR.onload();
+    if (instances[0]?.onload) instances[0].onload();
   });
 
   // Upload second file
-  mockXHR.responseText = 'https://transfer.sh/def456/file2.txt';
+  responseText = 'https://transfer.sh/def456/file2.txt';
   const file2 = new File(['test2'], 'file2.txt', { type: 'text/plain' });
   await act(async () => {
     fireEvent.drop(dropZone, { dataTransfer: { files: [file2] } });
   });
   await act(async () => {
-    if (mockXHR.onload) mockXHR.onload();
+    if (instances[1]?.onload) instances[1].onload();
   });
 
   await waitFor(() => {
@@ -345,13 +371,16 @@ it('handles null fileList gracefully', () => {
 });
 
 it('renders completed file as link', async () => {
-  const mockXHR = createMockXHR({
+  let xhrInstance: InstanceType<ReturnType<typeof createMockXHRClass>> | null = null;
+  const MockXHR = class extends createMockXHRClass({
     responseText: 'https://transfer.sh/abc123/linked-file.txt',
-  });
-  vi.stubGlobal(
-    'XMLHttpRequest',
-    vi.fn(() => mockXHR)
-  );
+  }) {
+    constructor() {
+      super();
+      xhrInstance = this;
+    }
+  };
+  vi.stubGlobal('XMLHttpRequest', MockXHR);
 
   render(<UploadZone />);
   const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
@@ -361,7 +390,7 @@ it('renders completed file as link', async () => {
     fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
   });
   await act(async () => {
-    if (mockXHR.onload) mockXHR.onload();
+    if (xhrInstance?.onload) xhrInstance.onload();
   });
 
   await waitFor(() => {
