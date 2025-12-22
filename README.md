@@ -1,5 +1,7 @@
 # transfer.sh-web
 
+[![CI](https://github.com/lusky3/transfer.sh-web/actions/workflows/ci.yml/badge.svg)](https://github.com/lusky3/transfer.sh-web/actions/workflows/ci.yml)
+[![Release](https://github.com/lusky3/transfer.sh-web/actions/workflows/release.yml/badge.svg)](https://github.com/lusky3/transfer.sh-web/actions/workflows/release.yml)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=lusky3_transfer.sh-web&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=lusky3_transfer.sh-web)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=lusky3_transfer.sh-web&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=lusky3_transfer.sh-web)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=lusky3_transfer.sh-web&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=lusky3_transfer.sh-web)
