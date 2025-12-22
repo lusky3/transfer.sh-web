@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Highlight, themes } from 'prism-react-renderer';
 import { Copy, Check } from 'lucide-react';
 import { useFetchContent } from '../../hooks/useFetchContent';
