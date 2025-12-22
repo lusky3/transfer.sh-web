@@ -1,6 +1,6 @@
 interface VideoPreviewProps {
-  url: string;
-  contentType: string;
+  readonly url: string;
+  readonly contentType: string;
 }
 
 export function VideoPreview({ url, contentType }: VideoPreviewProps) {
@@ -12,6 +12,7 @@ export function VideoPreview({ url, contentType }: VideoPreviewProps) {
         preload="metadata"
       >
         <source src={url} type={contentType} />
+        <track kind="captions" />
         Your browser does not support the video tag.
       </video>
     </div>

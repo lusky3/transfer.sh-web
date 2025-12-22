@@ -3,7 +3,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { getConfig } from '../types/config';
 
 interface HeaderProps {
-  showUploadLink?: boolean;
+  readonly showUploadLink?: boolean;
 }
 
 export function Header({ showUploadLink = false }: HeaderProps) {

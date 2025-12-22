@@ -18,13 +18,12 @@ export interface DownloadConfig extends AppConfig {
 }
 
 declare global {
-  interface Window {
-    __CONFIG__: AppConfig | DownloadConfig;
-  }
+  // eslint-disable-next-line no-var
+  var __CONFIG__: AppConfig | DownloadConfig;
 }
 
 export function getConfig<T extends AppConfig = AppConfig>(): T {
-  return (window.__CONFIG__ || {
+  return (globalThis.__CONFIG__ || {
     webAddress: 'https://transfer.sh/',
     hostname: 'transfer.sh',
   }) as T;

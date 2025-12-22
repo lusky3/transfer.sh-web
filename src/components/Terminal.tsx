@@ -2,8 +2,8 @@ import { Copy, Check } from 'lucide-react';
 import { useState } from 'react';
 
 interface TerminalProps {
-  children: React.ReactNode;
-  title?: string;
+  readonly children: React.ReactNode;
+  readonly title?: string;
 }
 
 export function Terminal({ children, title }: TerminalProps) {
@@ -23,9 +23,9 @@ export function Terminal({ children, title }: TerminalProps) {
 }
 
 interface CodeLineProps {
-  comment?: string;
-  command?: string;
-  output?: string;
+  readonly comment?: string;
+  readonly command?: string;
+  readonly output?: string;
 }
 
 export function CodeLine({ comment, command, output }: CodeLineProps) {
@@ -39,8 +39,8 @@ export function CodeLine({ comment, command, output }: CodeLineProps) {
 }
 
 interface CopyableCodeProps {
-  code: string;
-  className?: string;
+  readonly code: string;
+  readonly className?: string;
 }
 
 export function CopyableCode({ code, className = '' }: CopyableCodeProps) {

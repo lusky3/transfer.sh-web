@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
 
 interface ImagePreviewProps {
-  url: string;
-  filename: string;
+  readonly url: string;
+  readonly filename: string;
 }
 
 export function ImagePreview({ url, filename }: ImagePreviewProps) {

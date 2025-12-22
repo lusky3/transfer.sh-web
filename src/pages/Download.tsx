@@ -16,7 +16,7 @@ function formatBytes(bytes: number): string {
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
 export function DownloadPage() {
@@ -80,7 +80,7 @@ export function DownloadPage() {
             <h1 className="text-2xl font-bold mb-2 break-all">{config.filename}</h1>
             <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
               <span>{config.contentType}</span>
-              <span>{formatBytes(parseInt(config.contentLength) || 0)}</span>
+              <span>{formatBytes(Number.parseInt(config.contentLength, 10) || 0)}</span>
             </div>
           </div>
 

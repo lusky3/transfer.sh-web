@@ -5,8 +5,8 @@ import { useFetchContent } from '../../hooks/useFetchContent';
 import { PreviewLoading, PreviewError } from './PreviewContainer';
 
 interface CodePreviewProps {
-  url: string;
-  filename: string;
+  readonly url: string;
+  readonly filename: string;
 }
 
 function getLanguage(filename: string): string {
@@ -88,18 +88,22 @@ export function CodePreview({ url, filename }: CodePreviewProps) {
         <Highlight theme={themes.nightOwl} code={code} language={language}>
           {({ className, style, tokens, getLineProps, getTokenProps }) => (
             <pre className={`${className} p-4 text-sm font-mono`} style={style}>
-              {tokens.map((line, i) => (
-                <div key={i} {...getLineProps({ line })} className="table-row">
-                  <span className="table-cell pr-4 text-gray-500 select-none text-right w-12">
-                    {i + 1}
-                  </span>
-                  <span className="table-cell">
-                    {line.map((token, key) => (
-                      <span key={key} {...getTokenProps({ token })} />
-                    ))}
-                  </span>
-                </div>
-              ))}
+              {tokens.map((line, i) => {
+                const lineKey = `line-${i}-${line.map(t => t.content).join('').slice(0, 20)}`;
+                return (
+                  <div key={lineKey} {...getLineProps({ line })} className="table-row">
+                    <span className="table-cell pr-4 text-gray-500 select-none text-right w-12">
+                      {i + 1}
+                    </span>
+                    <span className="table-cell">
+                      {line.map((token, key) => {
+                        const tokenKey = `token-${i}-${key}-${token.content.slice(0, 10)}`;
+                        return <span key={tokenKey} {...getTokenProps({ token })} />;
+                      })}
+                    </span>
+                  </div>
+                );
+              })}
             </pre>
           )}
         </Highlight>

@@ -4,16 +4,16 @@ import { useFetchContent } from '../../hooks/useFetchContent';
 import { PreviewLoading, PreviewError, PreviewContainer } from './PreviewContainer';
 
 interface MarkdownPreviewProps {
-  url: string;
+  readonly url: string;
 }
 
 // Simple markdown parser - handles basic formatting
 function parseMarkdown(md: string): string {
   let html = md
     // Escape HTML
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
     // Headers
     .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-6 mb-2">$1</h3>')
     .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mt-8 mb-3">$1</h2>')
@@ -38,8 +38,8 @@ function parseMarkdown(md: string): string {
     .replace(/^\* (.*$)/gim, '<li class="ml-4">$1</li>')
     .replace(/^- (.*$)/gim, '<li class="ml-4">$1</li>')
     // Line breaks
-    .replace(/\n\n/g, '</p><p class="my-4">')
-    .replace(/\n/g, '<br />');
+    .replaceAll('\n\n', '</p><p class="my-4">')
+    .replaceAll('\n', '<br />');
 
   return `<p class="my-4">${html}</p>`;
 }

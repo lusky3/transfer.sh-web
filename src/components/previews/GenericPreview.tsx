@@ -1,8 +1,8 @@
 import { FileIcon, FileText, FileArchive, FileSpreadsheet } from 'lucide-react';
 
 interface GenericPreviewProps {
-  filename: string;
-  contentType: string;
+  readonly filename: string;
+  readonly contentType: string;
 }
 
 function getFileIcon(contentType: string, filename: string) {

@@ -5,8 +5,8 @@ export type Theme = 'system' | 'light' | 'dark';
 const STORAGE_KEY = 'transfer-sh-theme';
 
 function getSystemTheme(): 'light' | 'dark' {
-  if (typeof window === 'undefined') return 'light';
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  if (typeof globalThis.window === 'undefined') return 'light';
+  return globalThis.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
 function applyTheme(theme: Theme) {
@@ -22,7 +22,7 @@ function applyTheme(theme: Theme) {
 
 export function useTheme() {
   const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window === 'undefined') return 'system';
+    if (typeof globalThis.window === 'undefined') return 'system';
     return (localStorage.getItem(STORAGE_KEY) as Theme) || 'system';
   });
 
@@ -35,7 +35,7 @@ export function useTheme() {
   useEffect(() => {
     applyTheme(theme);
     
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const mediaQuery = globalThis.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = () => {
       if (theme === 'system') {
         applyTheme('system');

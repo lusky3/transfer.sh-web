@@ -145,7 +145,9 @@ describe('UploadZone', () => {
       expect(screen.getByText('test.txt')).toBeInTheDocument()
     })
 
-    const removeButton = screen.getByRole('button')
+    const removeButtons = screen.getAllByRole('button')
+    // The second button is the remove button (first is the drop zone)
+    const removeButton = removeButtons.find(btn => btn.tagName === 'BUTTON')!
     fireEvent.click(removeButton)
     
     expect(screen.queryByText('test.txt')).not.toBeInTheDocument()
@@ -305,8 +307,9 @@ describe('UploadZone', () => {
     // Simulate change with null files
     fireEvent.change(input, { target: { files: null } })
     
-    // Should not crash, no files should be added
-    expect(screen.queryByRole('button')).not.toBeInTheDocument()
+    // Should not crash, no files should be added (only the drop zone button exists)
+    const buttons = screen.getAllByRole('button')
+    expect(buttons).toHaveLength(1) // Only the drop zone
   })
 
   it('renders completed file as link', async () => {

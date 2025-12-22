@@ -1,8 +1,8 @@
 import { Music } from 'lucide-react';
 
 interface AudioPreviewProps {
-  url: string;
-  filename: string;
+  readonly url: string;
+  readonly filename: string;
 }
 
 export function AudioPreview({ url, filename }: AudioPreviewProps) {
@@ -17,6 +17,7 @@ export function AudioPreview({ url, filename }: AudioPreviewProps) {
         
         <audio controls className="w-full max-w-md">
           <source src={url} />
+          <track kind="captions" />
           Your browser does not support the audio element.
         </audio>
       </div>
