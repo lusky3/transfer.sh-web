@@ -92,7 +92,7 @@ export function Examples() {
             <div>
               <h3 className="font-medium mb-3">PowerShell (Windows)</h3>
               <Terminal>
-                <CodeLine command={`Invoke-WebRequest -Method PUT -InFile .\\file.txt ${webAddress}file.txt`} />
+                <CodeLine command={String.raw`Invoke-WebRequest -Method PUT -InFile .\file.txt ` + `${webAddress}file.txt`} />
               </Terminal>
             </div>
           </div>

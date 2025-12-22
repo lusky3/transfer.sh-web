@@ -20,11 +20,13 @@ function applyTheme(theme: Theme) {
   }
 }
 
-export function useTheme() {
-  const [theme, setThemeState] = useState<Theme>(() => {
+export function useTheme(): { theme: Theme; setTheme: (newTheme: Theme) => void } {
+  const themeState = useState<Theme>(() => {
     if (globalThis.window === undefined) return 'system';
     return (localStorage.getItem(STORAGE_KEY) as Theme) || 'system';
   });
+  const theme = themeState[0];
+  const setThemeState = themeState[1];
 
   const setTheme = useCallback((newTheme: Theme) => {
     setThemeState(newTheme);
