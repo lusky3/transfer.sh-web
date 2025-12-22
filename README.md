@@ -6,6 +6,7 @@
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=lusky3_transfer.sh-web&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=lusky3_transfer.sh-web)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=lusky3_transfer.sh-web&metric=coverage)](https://sonarcloud.io/summary/new_code?id=lusky3_transfer.sh-web)
 [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=lusky3_transfer.sh-web&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=lusky3_transfer.sh-web)
+[![Known Vulnerabilities](https://snyk.io/test/github/lusky3/transfer.sh-web/badge.svg)](https://snyk.io/test/github/lusky3/transfer.sh-web)
 
 Modern web frontend for [transfer.sh](https://github.com/dutchcoders/transfer.sh/) - easy file sharing from the command line.
 
