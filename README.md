@@ -1,5 +1,12 @@
 # transfer.sh-web
 
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=lusky3_transfer.sh-web&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=lusky3_transfer.sh-web)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=lusky3_transfer.sh-web&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=lusky3_transfer.sh-web)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=lusky3_transfer.sh-web&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=lusky3_transfer.sh-web)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=lusky3_transfer.sh-web&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=lusky3_transfer.sh-web)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=lusky3_transfer.sh-web&metric=coverage)](https://sonarcloud.io/summary/new_code?id=lusky3_transfer.sh-web)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=lusky3_transfer.sh-web&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=lusky3_transfer.sh-web)
+
 Modern web frontend for [transfer.sh](https://github.com/dutchcoders/transfer.sh/) - easy file sharing from the command line.
 
 ## Screenshots
