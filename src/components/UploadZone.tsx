@@ -120,28 +120,23 @@ export function UploadZone() {
     setFiles(prev => prev.filter(f => f.id !== id));
   }, []);
 
-  const completedFiles = files.filter(f => f.status === 'complete');
+  const completedFiles = files.filter((f): f is UploadedFile & { url: string } => 
+    f.status === 'complete' && f.url !== undefined
+  );
   const downloadAllUrl = completedFiles.length > 1
-    ? `${config.webAddress}(${completedFiles.map(f => new URL(f.url!).pathname).join(',')}).zip`
+    ? `${config.webAddress}(${completedFiles.map(f => new URL(f.url).pathname).join(',')}).zip`
     : null;
 
   return (
     <div className="space-y-4">
-      <div
-        role="button"
-        tabIndex={0}
+      <button
+        type="button"
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onClick={() => fileInputRef.current?.click()}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            fileInputRef.current?.click();
-          }
-        }}
         className={`
-          relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all
+          relative w-full border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all
           ${isDragging 
             ? 'border-primary-500 bg-primary-50 dark:bg-primary-950/20' 
             : 'border-gray-300 dark:border-gray-700 hover:border-primary-400 dark:hover:border-primary-600'
@@ -164,7 +159,7 @@ export function UploadZone() {
         <p className="text-sm text-gray-500 dark:text-gray-400">
           or <span className="text-primary-600 dark:text-primary-400">browse</span> to upload
         </p>
-      </div>
+      </button>
 
       {files.length > 0 && (
         <div className="space-y-2">

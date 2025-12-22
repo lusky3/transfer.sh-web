@@ -1,144 +1,173 @@
-
-Prefer `String#replaceAll()` over `String#replace()`.
+`String.raw` should be used to avoid escaping `\`.
 
 Intentionality
-Reliability
-
-
-3
-Low
 Maintainability
 
 
 3
 Low
-es2021
 readability
 +
 Open
 Not assigned
-L18
+L95
 5min effort
+2 days ago
+Code Smell
+Minor
+src/components/UploadZone.tsx
+
+
+This assertion is unnecessary since the receiver accepts the original type of the expression.
+
+Intentionality
+Maintainability
+
+
+3
+Low
+redundant
+type-dependent
++
+Open
+Not assigned
+L125
+1min effort
 2 days ago
 Code Smell
 Minor
 
 
-Prefer `String#replaceAll()` over `String#replace()`.
+Use <input type="button">, <input type="image">, <input type="reset">, <input type="submit">, or <button> instead of the "button" role to ensure accessibility across all devices.
 
-Intentionality
-Reliability
+Consistency
+Maintainability
 
 
-3
-Low
+2
+Medium
+accessibility
+react
++
+Open
+Not assigned
+L130
+5min effort
+1 hour ago
+Code Smell
+Major
+src/components/previews/PreviewContainer.tsx
+
+
+Replace this union type with a type alias.
+
+Adaptability
 Maintainability
 
 
 3
 Low
-es2021
-readability
+proficiency
 +
 Open
 Not assigned
-L19
+L5
 5min effort
-2 days ago
+4 hours ago
 Code Smell
 Minor
 
 
-Prefer `String#replaceAll()` over `String#replace()`.
+Mark the props of the component as read-only.
 
-Intentionality
-Reliability
-
-
-3
-Low
+Consistency
 Maintainability
 
 
 3
 Low
-es2021
-readability
+react
+type-dependent
 +
 Open
 Not assigned
-L20
+L15
 5min effort
-2 days ago
+4 hours ago
 Code Smell
 Minor
 
 
-Prefer `String#replaceAll()` over `String#replace()`.
+Mark the props of the component as read-only.
 
-Intentionality
-Reliability
-
-
-3
-Low
+Consistency
 Maintainability
 
 
 3
 Low
-es2021
-readability
+react
+type-dependent
 +
 Open
 Not assigned
-L22
+L31
 5min effort
-2 days ago
+4 hours ago
 Code Smell
 Minor
 
 
-Prefer `String#replaceAll()` over `String#replace()`.
+Mark the props of the component as read-only.
 
-Intentionality
-Reliability
-
-
-3
-Low
+Consistency
 Maintainability
 
 
 3
 Low
-es2021
-readability
+react
+type-dependent
 +
 Open
 Not assigned
-L23
+L45
 5min effort
-2 days ago
+4 hours ago
+Code Smell
+Minor
+src/hooks/useTheme.ts
+
+
+Compare with `undefined` directly instead of using `typeof`.
+
+Consistency
+Maintainability
+
+
+3
+Low
+readability
+style
++
+Open
+Not assigned
+L8
+2min effort
+1 hour ago
 Code Smell
 Minor
 
 
-Prefer `String#replaceAll()` over `String#replace()`.
+useState call is not destructured into value + setter pair
 
-Intentionality
-Reliability
-
-
-3
-Low
+Consistency
 Maintainability
 
 
 3
 Low
-es2021
-readability
+react
 +
 Open
 Not assigned
@@ -149,214 +178,21 @@ Code Smell
 Minor
 
 
-Prefer `String#replaceAll()` over `String#replace()`.
+Compare with `undefined` directly instead of using `typeof`.
 
-Intentionality
-Reliability
-
-
-3
-Low
+Consistency
 Maintainability
 
 
 3
 Low
-es2021
 readability
+style
 +
 Open
 Not assigned
-L26
-5min effort
-2 days ago
+L25
+2min effort
+1 hour ago
 Code Smell
 Minor
-
-
-Prefer `String#replaceAll()` over `String#replace()`.
-
-Intentionality
-Reliability
-
-
-3
-Low
-Maintainability
-
-
-3
-Low
-es2021
-readability
-+
-Open
-Not assigned
-L28
-5min effort
-2 days ago
-Code Smell
-Minor
-
-
-Prefer `String#replaceAll()` over `String#replace()`.
-
-Intentionality
-Reliability
-
-
-3
-Low
-Maintainability
-
-
-3
-Low
-es2021
-readability
-+
-Open
-Not assigned
-L30
-5min effort
-2 days ago
-Code Smell
-Minor
-
-
-Prefer `String#replaceAll()` over `String#replace()`.
-
-Intentionality
-Reliability
-
-
-3
-Low
-Maintainability
-
-
-3
-Low
-es2021
-readability
-+
-Open
-Not assigned
-L32
-5min effort
-2 days ago
-Code Smell
-Minor
-
-
-Prefer `String#replaceAll()` over `String#replace()`.
-
-Intentionality
-Reliability
-
-
-3
-Low
-Maintainability
-
-
-3
-Low
-es2021
-readability
-+
-Open
-Not assigned
-L34
-5min effort
-2 days ago
-Code Smell
-Minor
-
-
-Prefer `String#replaceAll()` over `String#replace()`.
-
-Intentionality
-Reliability
-
-
-3
-Low
-Maintainability
-
-
-3
-Low
-es2021
-readability
-+
-Open
-Not assigned
-L36
-5min effort
-2 days ago
-Code Smell
-Minor
-
-
-Prefer `String#replaceAll()` over `String#replace()`.
-
-Intentionality
-Reliability
-
-
-3
-Low
-Maintainability
-
-
-3
-Low
-es2021
-readability
-+
-Open
-Not assigned
-L38
-5min effort
-2 days ago
-Code Smell
-Minor
-
-
-Prefer `String#replaceAll()` over `String#replace()`.
-
-Intentionality
-Reliability
-
-
-3
-Low
-Maintainability
-
-
-3
-Low
-es2021
-readability
-+
-Open
-Not assigned
-L39
-5min effort
-2 days ago
-Code Smell
-Minor
-src/index.css
-
-
-Unexpected unknown at-rule "@custom-variant"
-
-Intentionality
-Reliability
-
-
-2
-Medium
-No tags
-+

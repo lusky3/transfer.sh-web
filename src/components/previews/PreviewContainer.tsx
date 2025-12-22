@@ -1,9 +1,11 @@
 import { ReactNode } from 'react';
 
+type PreviewVariant = 'default' | 'dark' | 'bordered';
+
 interface PreviewContainerProps {
-  children: ReactNode;
-  variant?: 'default' | 'dark' | 'bordered';
-  className?: string;
+  readonly children: ReactNode;
+  readonly variant?: PreviewVariant;
+  readonly className?: string;
 }
 
 const variantStyles = {
@@ -25,7 +27,7 @@ export function PreviewContainer({
 }
 
 interface PreviewLoadingProps {
-  variant?: 'default' | 'dark' | 'bordered';
+  readonly variant?: PreviewVariant;
 }
 
 export function PreviewLoading({ variant = 'default' }: PreviewLoadingProps) {
@@ -38,8 +40,8 @@ export function PreviewLoading({ variant = 'default' }: PreviewLoadingProps) {
 }
 
 interface PreviewErrorProps {
-  message: string;
-  variant?: 'default' | 'dark' | 'bordered';
+  readonly message: string;
+  readonly variant?: PreviewVariant;
 }
 
 export function PreviewError({ message, variant = 'default' }: PreviewErrorProps) {

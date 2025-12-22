@@ -45,7 +45,7 @@ describe('UploadZone', () => {
 
   it('shows drag state when dragging over', () => {
     render(<UploadZone />)
-    const dropZone = screen.getByText(/Drag & drop files here/).closest('div')!
+    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!
     
     fireEvent.dragOver(dropZone)
     expect(screen.getByText('Drop files here')).toBeInTheDocument()
@@ -53,7 +53,7 @@ describe('UploadZone', () => {
 
   it('resets drag state on drag leave', () => {
     render(<UploadZone />)
-    const dropZone = screen.getByText(/Drag & drop files here/).closest('div')!
+    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!
     
     fireEvent.dragOver(dropZone)
     fireEvent.dragLeave(dropZone)
@@ -72,7 +72,7 @@ describe('UploadZone', () => {
     const input = container.querySelector('input[type="file"]') as HTMLInputElement
     const clickSpy = vi.spyOn(input, 'click')
     
-    const dropZone = screen.getByText(/Drag & drop files here/).closest('div')!
+    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!
     fireEvent.click(dropZone)
     
     expect(clickSpy).toHaveBeenCalled()
@@ -86,7 +86,7 @@ describe('UploadZone', () => {
     vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
 
     render(<UploadZone />)
-    const dropZone = screen.getByText(/Drag & drop files here/).closest('div')!
+    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!
     
     const file = new File(['test content'], 'test.txt', { type: 'text/plain' })
     const dataTransfer = { files: [file] }
@@ -109,7 +109,7 @@ describe('UploadZone', () => {
     vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
 
     render(<UploadZone />)
-    const dropZone = screen.getByText(/Drag & drop files here/).closest('div')!
+    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!
     
     const file = new File(['test content'], 'test.txt', { type: 'text/plain' })
     const dataTransfer = { files: [file] }
@@ -132,7 +132,7 @@ describe('UploadZone', () => {
     vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
 
     render(<UploadZone />)
-    const dropZone = screen.getByText(/Drag & drop files here/).closest('div')!
+    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!
     
     const file = new File(['test'], 'test.txt', { type: 'text/plain' })
     fireEvent.drop(dropZone, { dataTransfer: { files: [file] } })
@@ -146,8 +146,8 @@ describe('UploadZone', () => {
     })
 
     const removeButtons = screen.getAllByRole('button')
-    // The second button is the remove button (first is the drop zone)
-    const removeButton = removeButtons.find(btn => btn.tagName === 'BUTTON')!
+    // Find the remove button (not the drop zone)
+    const removeButton = removeButtons.find(btn => !btn.textContent?.includes('Drag'))!
     fireEvent.click(removeButton)
     
     expect(screen.queryByText('test.txt')).not.toBeInTheDocument()
@@ -200,7 +200,7 @@ describe('UploadZone', () => {
     vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
 
     render(<UploadZone />)
-    const dropZone = screen.getByText(/Drag & drop files here/).closest('div')!
+    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!
     
     const file = new File(['test content here'], 'progress-test.txt', { type: 'text/plain' })
     
@@ -224,7 +224,7 @@ describe('UploadZone', () => {
     vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
 
     render(<UploadZone />)
-    const dropZone = screen.getByText(/Drag & drop files here/).closest('div')!
+    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!
     
     const file = new File(['test'], 'error-file.txt', { type: 'text/plain' })
     
@@ -249,7 +249,7 @@ describe('UploadZone', () => {
     vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
 
     render(<UploadZone />)
-    const dropZone = screen.getByText(/Drag & drop files here/).closest('div')!
+    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!
     
     const file = new File(['test'], 'token-file.txt', { type: 'text/plain' })
     
@@ -273,7 +273,7 @@ describe('UploadZone', () => {
     vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
 
     render(<UploadZone />)
-    const dropZone = screen.getByText(/Drag & drop files here/).closest('div')!
+    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!
     
     // Upload first file
     const file1 = new File(['test1'], 'file1.txt', { type: 'text/plain' })
@@ -319,7 +319,7 @@ describe('UploadZone', () => {
     vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
 
     render(<UploadZone />)
-    const dropZone = screen.getByText(/Drag & drop files here/).closest('div')!
+    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!
     
     const file = new File(['test'], 'linked-file.txt', { type: 'text/plain' })
     await act(async () => {
