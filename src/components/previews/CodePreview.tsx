@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Highlight, themes } from 'prism-react-renderer';
 import { Copy, Check } from 'lucide-react';
+import { useFetchContent } from '../../hooks/useFetchContent';
+import { PreviewLoading, PreviewError } from './PreviewContainer';
 
 interface CodePreviewProps {
   url: string;
@@ -52,45 +54,21 @@ function getLanguage(filename: string): string {
 }
 
 export function CodePreview({ url, filename }: CodePreviewProps) {
-  const [code, setCode] = useState<string>('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: code, loading, error } = useFetchContent(url);
   const [copied, setCopied] = useState(false);
 
   const language = getLanguage(filename);
 
-  useEffect(() => {
-    fetch(url)
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to load file');
-        return res.text();
-      })
-      .then(setCode)
-      .catch(err => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [url]);
-
   const handleCopy = async () => {
+    if (!code) return;
     await navigator.clipboard.writeText(code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  if (loading) {
-    return (
-      <div className="bg-gray-900 rounded-lg p-8 text-center">
-        <p className="text-gray-400">Loading...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-gray-900 rounded-lg p-8 text-center">
-        <p className="text-red-400">{error}</p>
-      </div>
-    );
-  }
+  if (loading) return <PreviewLoading variant="dark" />;
+  if (error) return <PreviewError message={error} variant="dark" />;
+  if (!code) return null;
 
   return (
     <div className="relative group">

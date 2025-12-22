@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import DOMPurify from 'dompurify';
+import { useFetchContent } from '../../hooks/useFetchContent';
+import { PreviewLoading, PreviewError, PreviewContainer } from './PreviewContainer';
 
 interface MarkdownPreviewProps {
   url: string;
@@ -43,43 +45,24 @@ function parseMarkdown(md: string): string {
 }
 
 export function MarkdownPreview({ url }: MarkdownPreviewProps) {
+  const { data: rawContent, loading, error } = useFetchContent(url);
   const [content, setContent] = useState<string>('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(url)
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to load file');
-        return res.text();
-      })
-      .then(md => setContent(DOMPurify.sanitize(parseMarkdown(md))))
-      .catch(err => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [url]);
+    if (rawContent) {
+      setContent(DOMPurify.sanitize(parseMarkdown(rawContent)));
+    }
+  }, [rawContent]);
 
-  if (loading) {
-    return (
-      <div className="bg-white dark:bg-gray-900 rounded-lg p-8 text-center border border-gray-200 dark:border-gray-800">
-        <p className="text-gray-500">Loading...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-white dark:bg-gray-900 rounded-lg p-8 text-center border border-gray-200 dark:border-gray-800">
-        <p className="text-red-500">{error}</p>
-      </div>
-    );
-  }
+  if (loading) return <PreviewLoading variant="bordered" />;
+  if (error) return <PreviewError message={error} variant="bordered" />;
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-lg p-8 border border-gray-200 dark:border-gray-800 max-h-[70vh] overflow-auto">
+    <PreviewContainer variant="bordered" className="p-8 max-h-[70vh] overflow-auto">
       <article
         className="prose dark:prose-invert max-w-none"
         dangerouslySetInnerHTML={{ __html: content }}
       />
-    </div>
+    </PreviewContainer>
   );
 }
