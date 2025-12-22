@@ -17,6 +17,7 @@
   --color-primary-950: #082f49;
 }
 
+/* stylelint-disable-next-line at-rule-no-unknown */
 @custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
