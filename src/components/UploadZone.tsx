@@ -207,19 +207,18 @@ export function UploadZone() {
       </button>
 
       {files.length > 0 && (
-        <div className="space-y-2" role="list" aria-label="Uploaded files">
+        <ul className="space-y-2 list-none" aria-label="Uploaded files">
           <div className="sr-only" aria-live="polite" aria-atomic="true">
-            {files.filter((f) => f.status === 'uploading').length > 0 &&
+            {files.some((f) => f.status === 'uploading') &&
               `Uploading ${files.filter((f) => f.status === 'uploading').length} file(s)`}
-            {files.filter((f) => f.status === 'complete').length > 0 &&
+            {files.some((f) => f.status === 'complete') &&
               `${files.filter((f) => f.status === 'complete').length} file(s) uploaded successfully`}
-            {files.filter((f) => f.status === 'error').length > 0 &&
+            {files.some((f) => f.status === 'error') &&
               `${files.filter((f) => f.status === 'error').length} file(s) failed to upload`}
           </div>
           {files.map((file) => (
-            <div
+            <li
               key={file.id}
-              role="listitem"
               className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg"
             >
               <FileIcon className="w-5 h-5 text-gray-400 flex-shrink-0" aria-hidden="true" />
@@ -247,19 +246,12 @@ export function UploadZone() {
                 </div>
 
                 {file.status === 'uploading' && (
-                  <div
-                    className="mt-1 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden"
-                    role="progressbar"
-                    aria-valuenow={file.progress}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
+                  <progress
+                    className="mt-1 h-1.5 w-full rounded-full overflow-hidden [&::-webkit-progress-bar]:bg-gray-200 dark:[&::-webkit-progress-bar]:bg-gray-700 [&::-webkit-progress-value]:bg-primary-500 [&::-moz-progress-bar]:bg-primary-500"
+                    value={file.progress}
+                    max={100}
                     aria-label={`Upload progress: ${file.progress}%`}
-                  >
-                    <div
-                      className="h-full bg-primary-500 transition-all duration-300"
-                      style={{ width: `${file.progress}%` }}
-                    />
-                  </div>
+                  />
                 )}
 
                 {file.status === 'complete' && file.deletionToken && (
@@ -296,20 +288,20 @@ export function UploadZone() {
               >
                 <X className="w-4 h-4" />
               </button>
-            </div>
+            </li>
           ))}
 
           {downloadAllBase && (
-            <div className="flex gap-2 pt-2">
+            <li className="flex gap-2 pt-2 list-none">
               <a href={`${downloadAllBase}.zip`} className="btn btn-secondary text-sm">
                 Download all as ZIP
               </a>
               <a href={`${downloadAllBase}.tar.gz`} className="btn btn-secondary text-sm">
                 Download all as TAR.GZ
               </a>
-            </div>
+            </li>
           )}
-        </div>
+        </ul>
       )}
     </div>
   );
