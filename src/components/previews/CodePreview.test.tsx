@@ -112,4 +112,50 @@ describe('CodePreview', () => {
       expect(container.querySelector('pre')).toBeInTheDocument();
     });
   });
+
+  it('falls back to text for unknown extensions', async () => {
+    vi.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+      text: () => Promise.resolve('some content'),
+    } as Response);
+
+    const { container } = render(
+      <CodePreview url="https://example.com/file.xyz" filename="file.xyz" />
+    );
+
+    await waitFor(() => {
+      expect(container.querySelector('pre')).toBeInTheDocument();
+    });
+  });
+
+  it('handles file without extension', async () => {
+    vi.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+      text: () => Promise.resolve('content'),
+    } as Response);
+
+    const { container } = render(
+      <CodePreview url="https://example.com/Makefile" filename="Makefile" />
+    );
+
+    await waitFor(() => {
+      expect(container.querySelector('pre')).toBeInTheDocument();
+    });
+  });
+
+  it('returns null when code is empty', async () => {
+    vi.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+      text: () => Promise.resolve(''),
+    } as Response);
+
+    const { container } = render(
+      <CodePreview url="https://example.com/empty.js" filename="empty.js" />
+    );
+
+    await waitFor(() => {
+      // Empty string is falsy, so component returns null
+      expect(container.querySelector('.relative')).not.toBeInTheDocument();
+    });
+  });
 });

@@ -42,6 +42,7 @@ function createMockXHRClass(
 describe('UploadZone', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    mockClipboard.writeText.mockClear();
     uuidCounter = 0;
   });
 
@@ -58,7 +59,6 @@ describe('UploadZone', () => {
   it('shows drag state when dragging over', () => {
     render(<UploadZone />);
     const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
-
     fireEvent.dragOver(dropZone);
     expect(screen.getByText('Drop files here')).toBeInTheDocument();
   });
@@ -66,7 +66,6 @@ describe('UploadZone', () => {
   it('resets drag state on drag leave', () => {
     render(<UploadZone />);
     const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
-
     fireEvent.dragOver(dropZone);
     fireEvent.dragLeave(dropZone);
     expect(screen.getByText(/Drag & drop files here/)).toBeInTheDocument();
@@ -83,10 +82,8 @@ describe('UploadZone', () => {
     const { container } = render(<UploadZone />);
     const input = container.querySelector('input[type="file"]') as HTMLInputElement;
     const clickSpy = vi.spyOn(input, 'click');
-
     const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
     fireEvent.click(dropZone);
-
     expect(clickSpy).toHaveBeenCalled();
   });
 
@@ -105,11 +102,8 @@ describe('UploadZone', () => {
 
     render(<UploadZone />);
     const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
-
     const file = new File(['test content'], 'test.txt', { type: 'text/plain' });
-    const dataTransfer = { files: [file] };
-
-    fireEvent.drop(dropZone, { dataTransfer });
+    fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
 
     await act(async () => {
       if (xhrInstance?.onload) xhrInstance.onload();
@@ -134,11 +128,8 @@ describe('UploadZone', () => {
 
     render(<UploadZone />);
     const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
-
     const file = new File(['test content'], 'test.txt', { type: 'text/plain' });
-    const dataTransfer = { files: [file] };
-
-    fireEvent.drop(dropZone, { dataTransfer });
+    fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
 
     await act(async () => {
       if (xhrInstance?.onload) xhrInstance.onload();
@@ -163,7 +154,6 @@ describe('UploadZone', () => {
 
     render(<UploadZone />);
     const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
-
     const file = new File(['test'], 'test.txt', { type: 'text/plain' });
     fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
 
@@ -177,226 +167,305 @@ describe('UploadZone', () => {
 
     const removeButton = screen.getByRole('button', { name: 'Remove file' });
     fireEvent.click(removeButton);
-
     expect(screen.queryByText('test.txt')).not.toBeInTheDocument();
   });
-});
 
-it('handles file input change', async () => {
-  let xhrInstance: InstanceType<ReturnType<typeof createMockXHRClass>> | null = null;
-  const MockXHR = class extends createMockXHRClass({
-    responseText: 'https://transfer.sh/abc123/test.txt',
-  }) {
-    constructor() {
-      super();
-      xhrInstance = this;
-    }
-  };
-  vi.stubGlobal('XMLHttpRequest', MockXHR);
-
-  const { container } = render(<UploadZone />);
-  const input = container.querySelector('input[type="file"]') as HTMLInputElement;
-
-  const file = new File(['test'], 'input-file.txt', { type: 'text/plain' });
-
-  await act(async () => {
-    fireEvent.change(input, { target: { files: [file] } });
-  });
-
-  await act(async () => {
-    if (xhrInstance?.onload) xhrInstance.onload();
-  });
-
-  await waitFor(() => {
-    expect(screen.getByText('input-file.txt')).toBeInTheDocument();
-  });
-});
-
-it('shows upload progress', async () => {
-  let progressCallback:
-    | ((e: { lengthComputable: boolean; loaded: number; total: number }) => void)
-    | null = null;
-
-  class MockXHR {
-    open = vi.fn();
-    send = vi.fn();
-    upload = {
-      addEventListener: vi.fn(
-        (
-          event: string,
-          cb: (e: { lengthComputable: boolean; loaded: number; total: number }) => void
-        ) => {
-          if (event === 'progress') {
-            progressCallback = cb;
-          }
-        }
-      ),
+  it('handles file input change', async () => {
+    let xhrInstance: InstanceType<ReturnType<typeof createMockXHRClass>> | null = null;
+    const MockXHR = class extends createMockXHRClass({
+      responseText: 'https://transfer.sh/abc123/test.txt',
+    }) {
+      constructor() {
+        super();
+        xhrInstance = this;
+      }
     };
-    onload: (() => void) | null = null;
-    onerror: (() => void) | null = null;
-    status = 0;
-    responseText = '';
-    getResponseHeader = vi.fn().mockReturnValue(null);
-  }
-  vi.stubGlobal('XMLHttpRequest', MockXHR);
+    vi.stubGlobal('XMLHttpRequest', MockXHR);
 
-  render(<UploadZone />);
-  const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
+    const { container } = render(<UploadZone />);
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(['test'], 'input-file.txt', { type: 'text/plain' });
 
-  const file = new File(['test content here'], 'progress-test.txt', { type: 'text/plain' });
+    await act(async () => {
+      fireEvent.change(input, { target: { files: [file] } });
+    });
+    await act(async () => {
+      if (xhrInstance?.onload) xhrInstance.onload();
+    });
 
-  await act(async () => {
-    fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
+    await waitFor(() => {
+      expect(screen.getByText('input-file.txt')).toBeInTheDocument();
+    });
   });
 
-  // Simulate progress event
-  await act(async () => {
-    if (progressCallback) {
-      progressCallback({ lengthComputable: true, loaded: 50, total: 100 });
+  it('shows upload progress', async () => {
+    let progressCallback:
+      | ((e: { lengthComputable: boolean; loaded: number; total: number }) => void)
+      | null = null;
+
+    class MockXHR {
+      open = vi.fn();
+      send = vi.fn();
+      upload = {
+        addEventListener: vi.fn(
+          (
+            event: string,
+            cb: (e: { lengthComputable: boolean; loaded: number; total: number }) => void
+          ) => {
+            if (event === 'progress') progressCallback = cb;
+          }
+        ),
+      };
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      status = 0;
+      responseText = '';
+      getResponseHeader = vi.fn().mockReturnValue(null);
     }
+    vi.stubGlobal('XMLHttpRequest', MockXHR);
+
+    render(<UploadZone />);
+    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
+    const file = new File(['test content here'], 'progress-test.txt', { type: 'text/plain' });
+
+    await act(async () => {
+      fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
+    });
+    await act(async () => {
+      if (progressCallback) progressCallback({ lengthComputable: true, loaded: 50, total: 100 });
+    });
+
+    expect(screen.getByText('progress-test.txt')).toBeInTheDocument();
   });
 
-  // File should be in uploading state
-  expect(screen.getByText('progress-test.txt')).toBeInTheDocument();
-});
+  it('shows error state on upload failure', async () => {
+    let xhrInstance: InstanceType<ReturnType<typeof createMockXHRClass>> | null = null;
+    const MockXHR = class extends createMockXHRClass({ status: 500 }) {
+      constructor() {
+        super();
+        xhrInstance = this;
+      }
+    };
+    vi.stubGlobal('XMLHttpRequest', MockXHR);
 
-it('shows error state on upload failure', async () => {
-  let xhrInstance: InstanceType<ReturnType<typeof createMockXHRClass>> | null = null;
-  const MockXHR = class extends createMockXHRClass({ status: 500 }) {
-    constructor() {
-      super();
-      xhrInstance = this;
-    }
-  };
-  vi.stubGlobal('XMLHttpRequest', MockXHR);
+    render(<UploadZone />);
+    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
+    const file = new File(['test'], 'error-file.txt', { type: 'text/plain' });
 
-  render(<UploadZone />);
-  const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
+    await act(async () => {
+      fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
+    });
+    await act(async () => {
+      if (xhrInstance?.onload) xhrInstance.onload();
+    });
 
-  const file = new File(['test'], 'error-file.txt', { type: 'text/plain' });
-
-  await act(async () => {
-    fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
+    await waitFor(() => {
+      expect(screen.getByText(/Upload failed/)).toBeInTheDocument();
+    });
   });
 
-  await act(async () => {
-    if (xhrInstance?.onload) xhrInstance.onload();
+  it('shows deletion token when provided', async () => {
+    let xhrInstance: InstanceType<ReturnType<typeof createMockXHRClass>> | null = null;
+    const MockXHR = class extends createMockXHRClass({
+      responseText: 'https://transfer.sh/abc123/test.txt',
+      deletionHeader: 'https://transfer.sh/abc123/test.txt/mytoken123',
+    }) {
+      constructor() {
+        super();
+        xhrInstance = this;
+      }
+    };
+    vi.stubGlobal('XMLHttpRequest', MockXHR);
+
+    render(<UploadZone />);
+    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
+    const file = new File(['test'], 'token-file.txt', { type: 'text/plain' });
+
+    await act(async () => {
+      fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
+    });
+    await act(async () => {
+      if (xhrInstance?.onload) xhrInstance.onload();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('mytoken123')).toBeInTheDocument();
+    });
   });
 
-  await waitFor(() => {
-    expect(screen.getByText(/Upload failed/)).toBeInTheDocument();
-  });
-});
+  it('shows download all buttons for multiple completed files', async () => {
+    const instances: InstanceType<ReturnType<typeof createMockXHRClass>>[] = [];
+    let responseText = 'https://transfer.sh/abc123/file1.txt';
+    const MockXHR = class extends createMockXHRClass({}) {
+      constructor() {
+        super();
+        this.responseText = responseText;
+        instances.push(this);
+      }
+    };
+    vi.stubGlobal('XMLHttpRequest', MockXHR);
 
-it('shows deletion token when provided', async () => {
-  let xhrInstance: InstanceType<ReturnType<typeof createMockXHRClass>> | null = null;
-  const MockXHR = class extends createMockXHRClass({
-    responseText: 'https://transfer.sh/abc123/test.txt',
-    deletionHeader: 'https://transfer.sh/abc123/test.txt/mytoken123',
-  }) {
-    constructor() {
-      super();
-      xhrInstance = this;
-    }
-  };
-  vi.stubGlobal('XMLHttpRequest', MockXHR);
+    render(<UploadZone />);
+    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
 
-  render(<UploadZone />);
-  const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
+    const file1 = new File(['test1'], 'file1.txt', { type: 'text/plain' });
+    await act(async () => {
+      fireEvent.drop(dropZone, { dataTransfer: { files: [file1] } });
+    });
+    await act(async () => {
+      if (instances[0]?.onload) instances[0].onload();
+    });
 
-  const file = new File(['test'], 'token-file.txt', { type: 'text/plain' });
+    responseText = 'https://transfer.sh/def456/file2.txt';
+    const file2 = new File(['test2'], 'file2.txt', { type: 'text/plain' });
+    await act(async () => {
+      fireEvent.drop(dropZone, { dataTransfer: { files: [file2] } });
+    });
+    await act(async () => {
+      if (instances[1]?.onload) instances[1].onload();
+    });
 
-  await act(async () => {
-    fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
-  });
-
-  await act(async () => {
-    if (xhrInstance?.onload) xhrInstance.onload();
-  });
-
-  await waitFor(() => {
-    expect(screen.getByText('mytoken123')).toBeInTheDocument();
-  });
-});
-
-it('shows download all buttons for multiple completed files', async () => {
-  const instances: InstanceType<ReturnType<typeof createMockXHRClass>>[] = [];
-  let responseText = 'https://transfer.sh/abc123/file1.txt';
-  const MockXHR = class extends createMockXHRClass({}) {
-    constructor() {
-      super();
-      this.responseText = responseText;
-      instances.push(this);
-    }
-  };
-  vi.stubGlobal('XMLHttpRequest', MockXHR);
-
-  render(<UploadZone />);
-  const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
-
-  // Upload first file
-  const file1 = new File(['test1'], 'file1.txt', { type: 'text/plain' });
-  await act(async () => {
-    fireEvent.drop(dropZone, { dataTransfer: { files: [file1] } });
-  });
-  await act(async () => {
-    if (instances[0]?.onload) instances[0].onload();
+    await waitFor(() => {
+      expect(screen.getByText('Download all as ZIP')).toBeInTheDocument();
+      expect(screen.getByText('Download all as TAR.GZ')).toBeInTheDocument();
+    });
   });
 
-  // Upload second file
-  responseText = 'https://transfer.sh/def456/file2.txt';
-  const file2 = new File(['test2'], 'file2.txt', { type: 'text/plain' });
-  await act(async () => {
-    fireEvent.drop(dropZone, { dataTransfer: { files: [file2] } });
-  });
-  await act(async () => {
-    if (instances[1]?.onload) instances[1].onload();
+  it('handles null fileList gracefully', () => {
+    const { container } = render(<UploadZone />);
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    fireEvent.change(input, { target: { files: null } });
+    const buttons = screen.getAllByRole('button');
+    expect(buttons).toHaveLength(1);
   });
 
-  await waitFor(() => {
-    expect(screen.getByText('Download all as ZIP')).toBeInTheDocument();
-    expect(screen.getByText('Download all as TAR.GZ')).toBeInTheDocument();
-  });
-});
+  it('renders completed file as link', async () => {
+    let xhrInstance: InstanceType<ReturnType<typeof createMockXHRClass>> | null = null;
+    const MockXHR = class extends createMockXHRClass({
+      responseText: 'https://transfer.sh/abc123/linked-file.txt',
+    }) {
+      constructor() {
+        super();
+        xhrInstance = this;
+      }
+    };
+    vi.stubGlobal('XMLHttpRequest', MockXHR);
 
-it('handles null fileList gracefully', () => {
-  const { container } = render(<UploadZone />);
-  const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    render(<UploadZone />);
+    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
+    const file = new File(['test'], 'linked-file.txt', { type: 'text/plain' });
 
-  // Simulate change with null files
-  fireEvent.change(input, { target: { files: null } });
+    await act(async () => {
+      fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
+    });
+    await act(async () => {
+      if (xhrInstance?.onload) xhrInstance.onload();
+    });
 
-  // Should not crash, no files should be added (only the drop zone button exists)
-  const buttons = screen.getAllByRole('button');
-  expect(buttons).toHaveLength(1); // Only the drop zone
-});
-
-it('renders completed file as link', async () => {
-  let xhrInstance: InstanceType<ReturnType<typeof createMockXHRClass>> | null = null;
-  const MockXHR = class extends createMockXHRClass({
-    responseText: 'https://transfer.sh/abc123/linked-file.txt',
-  }) {
-    constructor() {
-      super();
-      xhrInstance = this;
-    }
-  };
-  vi.stubGlobal('XMLHttpRequest', MockXHR);
-
-  render(<UploadZone />);
-  const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
-
-  const file = new File(['test'], 'linked-file.txt', { type: 'text/plain' });
-  await act(async () => {
-    fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
-  });
-  await act(async () => {
-    if (xhrInstance?.onload) xhrInstance.onload();
+    await waitFor(() => {
+      const link = screen.getByRole('link', { name: 'linked-file.txt' });
+      expect(link).toHaveAttribute('href', 'https://transfer.sh/abc123/linked-file.txt');
+      expect(link).toHaveAttribute('target', '_blank');
+    });
   });
 
-  await waitFor(() => {
-    const link = screen.getByRole('link', { name: 'linked-file.txt' });
-    expect(link).toHaveAttribute('href', 'https://transfer.sh/abc123/linked-file.txt');
-    expect(link).toHaveAttribute('target', '_blank');
+  it('copies download URL when copy link button clicked', async () => {
+    let xhrInstance: InstanceType<ReturnType<typeof createMockXHRClass>> | null = null;
+    const MockXHR = class extends createMockXHRClass({
+      responseText: 'https://transfer.sh/abc123/copy-test.txt',
+      deletionHeader: null,
+    }) {
+      constructor() {
+        super();
+        xhrInstance = this;
+      }
+    };
+    vi.stubGlobal('XMLHttpRequest', MockXHR);
+
+    render(<UploadZone />);
+    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
+    const file = new File(['test'], 'copy-test.txt', { type: 'text/plain' });
+
+    await act(async () => {
+      fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
+    });
+    await act(async () => {
+      if (xhrInstance?.onload) xhrInstance.onload();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: 'copy-test.txt' })).toBeInTheDocument();
+    });
+
+    const copyLinkButton = screen.getByRole('button', { name: 'Copy link' });
+    await act(async () => {
+      fireEvent.click(copyLinkButton);
+    });
+
+    expect(mockClipboard.writeText).toHaveBeenCalledWith(
+      'https://transfer.sh/abc123/copy-test.txt'
+    );
+  });
+
+  it('copies deletion token when copy token button clicked', async () => {
+    let xhrInstance: InstanceType<ReturnType<typeof createMockXHRClass>> | null = null;
+    const MockXHR = class extends createMockXHRClass({
+      responseText: 'https://transfer.sh/abc123/token-copy.txt',
+      deletionHeader: 'https://transfer.sh/abc123/token-copy.txt/secrettoken',
+    }) {
+      constructor() {
+        super();
+        xhrInstance = this;
+      }
+    };
+    vi.stubGlobal('XMLHttpRequest', MockXHR);
+
+    render(<UploadZone />);
+    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
+    const file = new File(['test'], 'token-copy.txt', { type: 'text/plain' });
+
+    await act(async () => {
+      fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
+    });
+    await act(async () => {
+      if (xhrInstance?.onload) xhrInstance.onload();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('secrettoken')).toBeInTheDocument();
+    });
+
+    const copyTokenButton = screen.getByRole('button', { name: 'Copy deletion token' });
+    await act(async () => {
+      fireEvent.click(copyTokenButton);
+    });
+
+    expect(mockClipboard.writeText).toHaveBeenCalledWith('secrettoken');
+  });
+
+  it('handles network error during upload', async () => {
+    let xhrInstance: InstanceType<ReturnType<typeof createMockXHRClass>> | null = null;
+    const MockXHR = class extends createMockXHRClass({}) {
+      constructor() {
+        super();
+        xhrInstance = this;
+      }
+    };
+    vi.stubGlobal('XMLHttpRequest', MockXHR);
+
+    render(<UploadZone />);
+    const dropZone = screen.getByText(/Drag & drop files here/).closest('button')!;
+    const file = new File(['test'], 'network-error.txt', { type: 'text/plain' });
+
+    await act(async () => {
+      fireEvent.drop(dropZone, { dataTransfer: { files: [file] } });
+    });
+    await act(async () => {
+      if (xhrInstance?.onerror) xhrInstance.onerror();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Upload failed')).toBeInTheDocument();
+    });
   });
 });

@@ -308,4 +308,16 @@ describe('DownloadPage', () => {
 
     expect(screen.getByText('Copy Link')).toBeInTheDocument();
   });
+
+  it('renders sandbox preview for sandbox type', () => {
+    window.__CONFIG__ = {
+      ...window.__CONFIG__,
+      previewType: 'sandbox',
+      filename: 'data.csv',
+      contentType: 'text/csv',
+    } as DownloadConfig;
+
+    render(<DownloadPage />);
+    expect(screen.getByText('Preview not available for this file type')).toBeInTheDocument();
+  });
 });
