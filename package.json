@@ -39,7 +39,7 @@
     "@vitejs/plugin-react": "^6.0.5",
     "@vitest/coverage-v8": "^4.1.11",
     "jsdom": "^30.0.1",
-    "oxlint": "^1.79.0",
+    "oxlint": "^1.80.0",
     "playwright": "^1.62.1",
     "prettier": "^3.9.6",
     "tailwindcss": "^4.3.3",
